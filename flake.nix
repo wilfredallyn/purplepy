@@ -1,3 +1,53 @@
+# {
+#   description = "purple-py";
+
+#   inputs = {
+#     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixpkgs-unstable";
+#     utils.url = "github:numtide/flake-utils";
+#   };
+
+#   outputs = { self, nixpkgs, utils }: (utils.lib.eachSystem ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ] (system: rec {
+
+#     packages = {
+#       pythonEnv = nixpkgs.legacyPackages.${system}.python310.withPackages (ps: with ps; [
+#         black
+#         jupyter
+#         # nostr-sdk
+#         numpy
+#         pandas
+#         pip
+#         psycopg2
+#         sqlalchemy
+#       ]);
+
+#       postgres = nixpkgs.legacyPackages.${system}.postgresql;
+#     };
+# defaultPackage = packages.pythonEnv;
+
+#     devShell = with nixpkgs.legacyPackages.${system}; mkShell {
+#       buildInputs = [
+#         packages.pythonEnv
+#         packages.postgres
+#       ];
+
+#       shellHook = ''
+#         if [ ! -d "/run/postgresql" ]; then
+#           sudo mkdir -p /run/postgresql/
+#           sudo chown $(whoami) /run/postgresql/
+#         fi
+#         if [ ! -d "pgsql" ]; then
+#           mkdir pgsql
+#           initdb -D pgsql --no-locale --encoding=UTF8
+#           createdb $(whoami)
+#           psql -c "CREATE ROLE postgres WITH SUPERUSER LOGIN;"
+#         fi
+#         if ! pg_ctl status -D pgsql &>/dev/null; then
+#           pg_ctl start -D pgsql
+#       fi
+#       '';
+#     };
+#   }));
+# }
 {
   description = "purple-py";
 
@@ -6,13 +56,24 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils }: (utils.lib.eachSystem ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ] (system: rec {
+  outputs = { self, nixpkgs, utils }: utils.lib.eachSystem ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"] (system: let
 
+    nostrSdk = nixpkgs.legacyPackages.${system}.python310Packages.buildPythonPackage rec {
+      pname = "nostr-sdk";
+      version = "0.0.4";
+
+      src = nixpkgs.legacyPackages.${system}.python310Packages.fetchPypi {
+        inherit pname version;
+        sha256 = "538875ca995182300f5e4f4cf75d3fb48433621cf7f5f994eabe9713dfc8e145";
+      };
+    };
+
+  in rec {
     packages = {
       pythonEnv = nixpkgs.legacyPackages.${system}.python310.withPackages (ps: with ps; [
         black
         jupyter
-        # nostr-sdk
+        nostrSdk
         numpy
         pandas
         pip
@@ -23,6 +84,7 @@
       postgres = nixpkgs.legacyPackages.${system}.postgresql;
     };
 
+    
     defaultPackage = packages.pythonEnv;
 
     devShell = with nixpkgs.legacyPackages.${system}; mkShell {
@@ -44,10 +106,10 @@
         fi
         if ! pg_ctl status -D pgsql &>/dev/null; then
           pg_ctl start -D pgsql
-      fi
+        fi
       '';
     };
-  }));
+  });
 }
 
 
