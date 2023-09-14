@@ -2,6 +2,10 @@ from query import query_events
 from sqlalchemy import create_engine
 
 
+def temp():
+    pass
+
+
 def init_db(client):
     engine = create_engine("postgresql://postgres@localhost:5432/postgres")
 
