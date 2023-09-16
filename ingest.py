@@ -11,6 +11,7 @@ def init_db(client):
 
     npub = "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc"
     df = query_events(client, npub)
+    df["tags"] = df["tags"].apply(lambda x: {item[0]: item[1] for item in x})
     df[df.columns[:-1]].to_sql(
         "events", engine, if_exists="append", index=True, method="multi"
     )

@@ -14,4 +14,5 @@ def query_events(client, npub):
 
 
 def query_db(engine, sql_query):
+    # query nested jsonb: sql_query = "SELECT * FROM events WHERE tags->>'t' = 'sm41623576'";
     return pd.read_sql(sql_query, engine)
