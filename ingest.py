@@ -19,7 +19,7 @@ def init_db(client):
         if_exists="replace",  # append
         method="multi",
         dtype={
-            "tags": dialects.postgresql.JSONB,
-            "tags_relay_url": dialects.postgresql.JSONB,
+            "tags": JSONB,
+            "tags_relay_url": JSONB,
         },
     )
