@@ -40,6 +40,7 @@
     packages = {
       pythonEnv = pkgs.python310.withPackages (ps: with ps; [
         black
+        dash
         jupyter
         nostrSdk
         numpy
@@ -62,9 +63,10 @@
       ];
       
       shellHook = ''
-        if [ ! -d "/run/postgresql" ]; then
-          sudo mkdir -p /run/postgresql/
-          sudo chown $(whoami) /run/postgresql/
+        PG_RUN_DIR="$PWD/pgsql-run"
+        if [ ! -d "$PG_RUN_DIR" ]; then
+          mkdir -p $PG_RUN_DIR
+          chown $(whoami) $PG_RUN_DIR
         fi
         if [ ! -d "pgsql" ]; then
           mkdir pgsql
@@ -75,6 +77,31 @@
         if ! pg_ctl status -D pgsql &>/dev/null; then
           pg_ctl start -D pgsql
         fi
+
+        # Set up Neo4j
+        NEO4J_CONF_DIR="$PWD/neo4j-conf"
+        NEO4J_DATA_DIR="$PWD/neo4j-data"
+        NEO4J_LOGS_DIR="$PWD/neo4j-logs"
+        NEO4J_RUN_DIR="$PWD/neo4j-run"
+        NEO4J_PLUGINS_DIR="$PWD/neo4j-plugins"
+        NEO4J_LIB_DIR="$PWD/neo4j-lib"
+        NEO4J_LICENSES_DIR="$PWD/neo4j-licenses"
+
+        mkdir -p $NEO4J_CONF_DIR $NEO4J_DATA_DIR $NEO4J_LOGS_DIR $NEO4J_RUN_DIR $NEO4J_PLUGINS_DIR $NEO4J_LIB_DIR $NEO4J_LICENSES_DIR
+
+        NEO4J_PATH=$(dirname $(which neo4j))
+
+        cp $NEO4J_PATH/../share/neo4j/conf/neo4j.conf $NEO4J_CONF_DIR/
+        chmod u+rw $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.data=.*|dbms.directories.data=$NEO4J_DATA_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.logs=.*|dbms.directories.logs=$NEO4J_LOGS_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.run=.*|dbms.directories.run=$NEO4J_RUN_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.plugins=.*|dbms.directories.plugins=$NEO4J_PLUGINS_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.lib=.*|dbms.directories.lib=$NEO4J_LIB_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|#dbms.directories.licenses=.*|dbms.directories.licenses=$NEO4J_LICENSES_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+
+        export NEO4J_CONF=$NEO4J_CONF_DIR
+        neo4j start
       '';
     };
   });
