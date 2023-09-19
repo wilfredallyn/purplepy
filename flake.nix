@@ -74,9 +74,10 @@
           createdb $(whoami)
           psql -c "CREATE ROLE postgres WITH SUPERUSER LOGIN;"
         fi
-        if ! pg_ctl status -D pgsql &>/dev/null; then
-          pg_ctl start -D pgsql
-        fi
+        # start pgsql
+        # if ! pg_ctl status -D pgsql &>/dev/null; then
+        #   pg_ctl start -D pgsql
+        # fi
 
         # Set up Neo4j
         NEO4J_CONF_DIR="$PWD/neo4j-conf"
@@ -101,7 +102,9 @@
         sed -i "s|#dbms.directories.licenses=.*|dbms.directories.licenses=$NEO4J_LICENSES_DIR|" $NEO4J_CONF_DIR/neo4j.conf
 
         export NEO4J_CONF=$NEO4J_CONF_DIR
-        neo4j start
+
+        echo "type 'pg_ctl start -D pgsql' to start postgres"
+        echo "type 'neo4j start' to start neo4j"
       '';
     };
   });
