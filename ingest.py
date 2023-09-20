@@ -40,39 +40,62 @@ def parse_tags(df):
             if lst and lst[0] == "e":
                 if len(lst) == 4:
                     # ["e", "1fcc...", "wss://nos.lol/", "reply"]
-                    e_rows.append([row.name, lst[1], lst[2], lst[3]])
+                    e_rows.append(
+                        [row.name, row.created_at, lst[1], row.kind, lst[2], lst[3]]
+                    )
                 elif len(lst) == 3:
                     # ['e', '10c9a19..', 'wss://nostr.wine/']
                     # ['e', '9ee62e263f', '']
-                    e_rows.append([row.name, lst[1], lst[2], None])
+                    e_rows.append(
+                        [row.name, lst[1], row.created_at, row.kind, lst[2], None]
+                    )
                 elif len(lst) == 2:
                     # ["e", "1fcc...""]
-                    e_rows.append([row.name, lst[1], None, None])
+                    e_rows.append(
+                        [row.name, lst[1], row.created_at, row.kind, None, None]
+                    )
                 else:
                     raise (ValueError, "expected 2-4 fields for e tags")
             elif lst and lst[0] == "p":
                 if len(lst) == 4:
                     # ['p', '97c70a...', 'wss://relayable.org', 'hodlbod']
                     # ['p', 'fa984b..', '', 'mention' ]
-                    p_rows.append([row.name, lst[1], lst[2], lst[3]])
+                    p_rows.append(
+                        [row.name, lst[1], row.created_at, row.kind, lst[2], lst[3]]
+                    )
                 elif len(lst) == 3:
                     # ['p', 'fa984bd...', 'pablof7z']
                     # ['p', 'b708f73...', 'wss://nostr-relay.wlvs.space']
-                    p_rows.append([row.name, lst[1], lst[2], None])
+                    p_rows.append(
+                        [row.name, lst[1], row.created_at, row.kind, lst[2], None]
+                    )
                 elif len(lst) == 2:
                     # ['p', 'ee11a5']
-                    p_rows.append([row.name, lst[1], None, None])
-                else:
-                    raise (ValueError, "expected 2-4 fields for p tags")
+                    p_rows.append(
+                        [row.name, lst[1], row.created_at, row.kind, None, None]
+                    )
+                elif len(lst) > 4:
+                    print(f"{row.name}: {lst}")
+                    raise ValueError("> 4 fields for p tags")
 
+    # https://github.com/nostr-protocol/nips#standardized-tags
     df_reply = pd.DataFrame(
-        e_rows, columns=["source_id", "event_id", "relay_url", "marker"]
-    ).set_index(["source_id", "event_id"])
+        e_rows,
+        columns=["source_id", "event_id", "created_at", "kind", "relay_url", "marker"],
+    )  # .set_index(["source_id", "event_id"])
+    # https://github.com/nostr-protocol/nips/blob/master/02.md#petname-scheme
     df_mention = pd.DataFrame(
-        p_rows, columns=["source_id", "event_id", "relay_url", "marker"]
-    ).set_index(["source_id", "event_id"])
+        p_rows,
+        columns=["source_id", "user_id", "created_at", "kind", "relay_url", "petname"],
+    )  # .set_index(["source_id", "event_id"])
 
     # remove empty fields
     # if len(lst[2]) == 0:  # ["e", "1fcc...", ""]
     #     e_rows.append([row.name, lst[1], None, None])
     return df_reply, df_mention
+
+
+def get_thread(event_id, df_reply):
+    return df_reply[df_reply.event_id == event_id].sort_values(
+        "created_at", ascending=True
+    )
