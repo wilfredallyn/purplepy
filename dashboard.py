@@ -1,71 +1,66 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from datetime import timedelta
+from nostr_sdk import Keys, Client, Options
 import plotly.express as px
-from sqlalchemy import create_engine, Column, BigInteger, String
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.dialects.postgresql import JSONB
+import pandas as pd
+from query import query_events_by_author
+import json
 
-# Setup app and layout
+
+keys = Keys.generate()
+opts = Options().timeout(timedelta(seconds=1000))
+client = Client.with_opts(keys, opts)
+client.add_relay("wss://relay.damus.io")
+client.add_relay("wss://nostr.oxtr.dev")
+client.add_relay("wss://nostr.openchain.fr")
+client.connect()
+
+
 app = dash.Dash(__name__)
+
 app.layout = html.Div(
     [
-        html.Label("Enter Pubkey:"),
-        dcc.Input(id="pubkey-input", type="text", value=""),
+        dcc.Input(id="npub-input", type="text", placeholder="Enter npub value"),
         html.Button("Submit", id="submit-btn", n_clicks=0),
-        dcc.Graph(id="histogram-graph"),
+        dcc.Loading(
+            id="loading",
+            type="default",  # or "circle" or "cube" or "dot" based on your preference
+            children=[dcc.Graph(id="graph-output"), html.Div(id="message-output")],
+        ),
     ]
 )
 
-# Database connection
-DATABASE_URL = (
-    "postgresql://postgres@localhost:5432/postgres"  # Change this to your database URL
-)
-engine = create_engine(DATABASE_URL)
-
-# ORM setup
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
-
-
-class Events(Base):
-    __tablename__ = "events"
-    id = Column(String, primary_key=True)
-    created_at = Column(BigInteger)
-    kind = Column(BigInteger)
-    tags = Column(JSONB)
-    tags_relay_url = Column(JSONB)
-    pubkey = Column(String)
-    content = Column(String)
-    sig = Column(String)
-
 
 @app.callback(
-    Output("histogram-graph", "figure"),
+    [
+        Output("graph-output", "figure"),
+        Output("message-output", "children"),
+    ],  # Add another output for the message
     [Input("submit-btn", "n_clicks")],
-    [dash.dependencies.State("pubkey-input", "value")],
+    [dash.dependencies.State("npub-input", "value")],
 )
-def update_histogram(n_clicks, pubkey_value):
-    if not pubkey_value:
-        return {
-            "data": [],
-            "layout": {
-                "title": "Please enter a pubkey and click Submit.",
-                "xaxis": {"title": "Kind"},
-                "yaxis": {"title": "Count"},
-            },
-        }
+def update_graph(n_clicks, npub):
+    if not npub:
+        return px.scatter(), "Please enter a valid npub value."
 
-    session = Session()
-    events_with_pubkey = session.query(Events).filter_by(pubkey=pubkey_value).all()
-    kinds = [str(event.kind) for event in events_with_pubkey if event.kind is not None]
-    session.close()
+    # Query client
+    df = query_events_by_author(client, npub)
+    if df.empty:
+        return px.scatter(), "No data found for the provided npub."
 
     fig = px.histogram(
-        x=kinds, title=f"Histogram of events by kind for pubkey {pubkey_value}"
+        x=df.kind.astype(str), title=f"Histogram of events by kind for {npub}"
     )
-    return fig
+
+    return fig, "Submit button clicked!"
 
 
 if __name__ == "__main__":
     app.run_server(debug=True)
+
+
+# stacked histogram of kind distribution (df has multiple npubs)
+# df.kind = df.kind.astype(str)
+# px.histogram(df, x="pubkey", color="kind")

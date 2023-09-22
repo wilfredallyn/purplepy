@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from nostr_sdk import Keys, Client, EventBuilder, Filter, PublicKey
+from nostr_sdk import Keys, Client, EventBuilder, Filter, Options, PublicKey
 from datetime import timedelta
 import time
 
