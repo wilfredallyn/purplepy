@@ -1,27 +1,13 @@
+from datetime import timedelta
 import pandas as pd
 import json
 from nostr_sdk import Keys, Client, EventBuilder, Filter, Options, PublicKey
-from datetime import timedelta
-import time
-
+from sqla_models import Events
 from sqlalchemy import create_engine, Column, BigInteger, String
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
-
-
-class Events(Base):
-    __tablename__ = "events"
-    id = Column(String, primary_key=True)
-    created_at = Column(BigInteger)
-    kind = Column(BigInteger)
-    tags = Column(JSONB)
-    tags_relay_url = Column(JSONB)
-    pubkey = Column(String)
-    sig = Column(String)
-    content = Column(String)
 
 
 def query_events(client, kind=None, num_limit=1000):

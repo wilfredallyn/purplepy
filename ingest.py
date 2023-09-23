@@ -30,12 +30,9 @@ def init_db(client):
     )
 
 
-def parse_tags(df):
-    # Extract rows based on condition and create new DataFrames
+def parse_reply_tags(df):
     e_rows = []
-    p_rows = []
-
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         for lst in row["tags"]:
             if lst and lst[0] == "e":
                 if len(lst) == 4:
@@ -56,7 +53,20 @@ def parse_tags(df):
                     )
                 else:
                     raise (ValueError, "expected 2-4 fields for e tags")
-            elif lst and lst[0] == "p":
+
+    # https://github.com/nostr-protocol/nips#standardized-tags
+    df_reply = pd.DataFrame(
+        e_rows,
+        columns=["source_id", "event_id", "created_at", "kind", "relay_url", "marker"],
+    )  # .set_index(["source_id", "event_id"])
+    return df_reply
+
+
+def parse_mention_tags(df):
+    p_rows = []
+    for _, row in df.iterrows():
+        for lst in row["tags"]:
+            if lst and lst[0] == "p":
                 if len(lst) == 4:
                     # ['p', '97c70a...', 'wss://relayable.org', 'hodlbod']
                     # ['p', 'fa984b..', '', 'mention' ]
@@ -78,21 +88,12 @@ def parse_tags(df):
                     print(f"{row.name}: {lst}")
                     raise ValueError("> 4 fields for p tags")
 
-    # https://github.com/nostr-protocol/nips#standardized-tags
-    df_reply = pd.DataFrame(
-        e_rows,
-        columns=["source_id", "event_id", "created_at", "kind", "relay_url", "marker"],
-    )  # .set_index(["source_id", "event_id"])
     # https://github.com/nostr-protocol/nips/blob/master/02.md#petname-scheme
     df_mention = pd.DataFrame(
         p_rows,
         columns=["source_id", "user_id", "created_at", "kind", "relay_url", "petname"],
     )  # .set_index(["source_id", "event_id"])
-
-    # remove empty fields
-    # if len(lst[2]) == 0:  # ["e", "1fcc...", ""]
-    #     e_rows.append([row.name, lst[1], None, None])
-    return df_reply, df_mention
+    return df_mention
 
 
 def get_thread(event_id, df_reply):
