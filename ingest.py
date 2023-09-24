@@ -52,7 +52,9 @@ def parse_reply_tags(df):
                         [row.name, lst[1], row.created_at, row.kind, None, None]
                     )
                 else:
-                    raise (ValueError, "expected 2-4 fields for e tags")
+                    print(f"expected 2-4 fields for e tags: {row}: {lst}")
+                    # fix: be169dcde5d3a423916827449f37bd09be0e2cbb34ddf62204d6c0ba97d03a0c: many relay_urls
+                    # raise ValueError("expected 2-4 fields for e tags")
 
     # https://github.com/nostr-protocol/nips#standardized-tags
     df_reply = pd.DataFrame(
