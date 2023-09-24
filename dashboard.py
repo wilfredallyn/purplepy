@@ -15,6 +15,9 @@ client = Client.with_opts(keys, opts)
 client.add_relay("wss://relay.damus.io")
 client.add_relay("wss://nostr.oxtr.dev")
 client.add_relay("wss://nostr.openchain.fr")
+client.add_relay("wss://relay.nostr.band")
+client.add_relay("wss://relay.primal.net")
+client.add_relay("wss://relay.mostr.pub")
 client.connect()
 
 
@@ -24,6 +27,15 @@ app.layout = html.Div(
     [
         dcc.Input(id="npub-input", type="text", placeholder="Enter npub value"),
         html.Button("Submit", id="submit-btn", n_clicks=0),
+        dcc.RadioItems(
+            id="toggle-btn",
+            options=[
+                {"label": "Query Network", "value": "network"},
+                {"label": "Local DB", "value": "local"},
+            ],
+            value="network",
+            labelStyle={"display": "inline-block"},
+        ),
         dcc.Loading(
             id="loading",
             type="default",
@@ -47,8 +59,6 @@ def format_table(df):
     cols = ["created_at", "kind", "content"]
     table_data = df[cols].to_dict("records")
     table_columns = [{"name": i, "id": i} for i in cols]
-    # table_data = df.to_dict("records")
-    # table_columns = [{"name": i, "id": i} for i in df.columns]
     return table_data, table_columns
 
 
@@ -56,18 +66,26 @@ def format_table(df):
     [
         Output("graph-output", "figure"),
         Output("message-output", "children"),
-        Output("table-output", "data"),  # Add this line
-        Output("table-output", "columns"),  # Add this line
+        Output("table-output", "data"),
+        Output("table-output", "columns"),
     ],
-    [Input("submit-btn", "n_clicks")],
-    [dash.dependencies.State("npub-input", "value")],
+    [
+        Input("submit-btn", "n_clicks"),
+    ],
+    [
+        dash.dependencies.State("npub-input", "value"),
+        dash.dependencies.State("toggle-btn", "value"),
+    ],
 )
-def update_graph(n_clicks, npub):
+def update_graph(n_clicks, npub, toggle_value):
     if not npub:
         return px.scatter(), "Please enter a valid npub value.", None, None
 
-    # Query client
-    df = query_events_by_author(client, npub)
+    if toggle_value == "network":
+        df = query_events_by_author(client, npub)
+    elif toggle_value == "local":
+        df = query_events_by_author(client, npub)
+
     if df.empty:
         return px.scatter(), "No data found for the provided npub.", None, None
 
