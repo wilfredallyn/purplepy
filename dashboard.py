@@ -1,24 +1,21 @@
 import dash
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
-from datetime import datetime, timedelta
-from nostr_sdk import Keys, Client, Options
 import plotly.express as px
 import pandas as pd
-from query import query_events_by_author
-import json
+from query import init_client, query_db, query_events_by_author
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from utils import format_table
 
 
-keys = Keys.generate()
-opts = Options().timeout(timedelta(seconds=1000))
-client = Client.with_opts(keys, opts)
-client.add_relay("wss://relay.damus.io")
-client.add_relay("wss://nostr.oxtr.dev")
-client.add_relay("wss://nostr.openchain.fr")
-client.add_relay("wss://relay.nostr.band")
-client.add_relay("wss://relay.primal.net")
-client.add_relay("wss://relay.mostr.pub")
-client.connect()
+# for querying network
+client = init_client()
+
+# for querying local db
+engine = create_engine("postgresql://postgres@localhost:5432/postgres")
+Session = sessionmaker(bind=engine)
+# Base = declarative_base()
 
 
 app = dash.Dash(__name__)
@@ -49,19 +46,6 @@ app.layout = html.Div(
 )
 
 
-def format_table(df):
-    df = df.applymap(
-        lambda x: str(x) if not isinstance(x, (str, int, float, bool)) else x
-    )
-    df.created_at = df.created_at.apply(
-        lambda x: datetime.fromtimestamp(x).strftime("%Y-%m-%d %I:%M%p")
-    )
-    cols = ["created_at", "kind", "content"]
-    table_data = df[cols].to_dict("records")
-    table_columns = [{"name": i, "id": i} for i in cols]
-    return table_data, table_columns
-
-
 @app.callback(
     [
         Output("graph-output", "figure"),
@@ -84,7 +68,7 @@ def update_graph(n_clicks, npub, toggle_value):
     if toggle_value == "network":
         df = query_events_by_author(client, npub)
     elif toggle_value == "local":
-        df = query_events_by_author(client, npub)
+        df = query_db(Session, npub)
 
     if df.empty:
         return px.scatter(), "No data found for the provided npub.", None, None
