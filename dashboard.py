@@ -24,6 +24,12 @@ app = dash.Dash(__name__)
 app.layout = html.Div(
     [
         dcc.Input(id="npub", type="text", placeholder="Enter npub value"),
+        dcc.Input(id="kind", type="text", placeholder="Enter kind value (Optional)"),
+        dcc.Input(
+            id="num_days",
+            type="number",
+            placeholder="Enter num_days value (Default: 1)",
+        ),
         html.Button("Submit", id="submit-btn", n_clicks=0),
         dcc.RadioItems(
             id="toggle-btn",
@@ -59,24 +65,33 @@ app.layout = html.Div(
     ],
     [
         dash.dependencies.State("npub", "value"),
+        dash.dependencies.State("kind", "value"),
+        dash.dependencies.State("num_days", "value"),
         dash.dependencies.State("toggle-btn", "value"),
     ],
 )
-def update_graph(n_clicks, npub, toggle_value):
+def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
     if not npub:
         return px.scatter(), "Please enter a valid npub value.", None, None
+
+    kind_value = None if not kind_value else kind_value
+    num_days = int(num_days) if num_days else 1
 
     if toggle_value == "network":
         df = query_events(
             client=client,
-            kind=None,
+            kind=kind_value,
             npub=npub,
-            num_days=1,
+            num_days=num_days,
             num_limit=None,
             timeout_secs=30,
         )
     elif toggle_value == "local":
-        df = query_db(Session, npub)
+        df = query_db(
+            Session=Session,
+            npub=npub,
+            kind=kind_value,
+        )
 
     if df.empty:
         return px.scatter(), "No data found for the provided npub.", None, None

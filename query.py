@@ -20,7 +20,7 @@ def init_client():
 
 
 def query_events(
-    client, kind=None, npub=None, num_days=None, num_limit=None, timeout_secs=30
+    client, npub=None, kind=None, num_days=None, num_limit=None, timeout_secs=30
 ):
     filter = Filter()
     if kind:
@@ -39,12 +39,17 @@ def query_events(
     return postprocess(df)
 
 
-def query_db(Session, npub):
+def query_db(Session, npub=None, kind=None):
     # fix: check if hex or bech32
     # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
     pk = PublicKey.from_bech32(npub).to_hex()
     with Session() as session:
-        results = session.query(Events).filter(Events.pubkey == pk).all()
+        sqla_query = session.query(Events)
+        if npub:
+            sqla_query = sqla_query.filter(Events.pubkey == pk)
+        if kind:
+            sqla_query = sqla_query.filter(Events.kind == int(kind))
+        results = sqla_query.all()
     df = pd.DataFrame([r.__dict__ for r in results])
     return postprocess(df)
 
