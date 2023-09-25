@@ -12,7 +12,6 @@ def init_client():
     client = Client.with_opts(keys, opts)
     client.add_relay("wss://relay.damus.io")
     client.add_relay("wss://nostr.oxtr.dev")
-    client.add_relay("wss://nostr.openchain.fr")
     client.add_relay("wss://relay.nostr.band")
     client.add_relay("wss://relay.primal.net")
     client.add_relay("wss://relay.mostr.pub")
@@ -20,21 +19,21 @@ def init_client():
     return client
 
 
-def query_events(client, kind=None, num_limit=1000):
+def query_events(
+    client, kind=None, npub=None, num_days=None, num_limit=None, timeout_secs=30
+):
+    filter = Filter()
     if kind:
-        filter = Filter().kind(kind).limit(num_limit)
-    else:
-        filter = Filter().limit(num_limit)
-    events = client.get_events_of([filter], timedelta(seconds=50))
-    df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
-    return postprocess(df)
-
-
-def query_events_by_author(client, npub, timeout_secs=10):
-    # fix: check if hex or bech32
-    # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
-    pk = PublicKey.from_bech32(npub)
-    filter = Filter().author(pk.to_hex()).limit(10)
+        filter = filter.kind(kind)
+    if npub:
+        # fix: check if hex or bech32
+        # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
+        pk = PublicKey.from_bech32(npub)
+        filter = filter.author(pk.to_hex())
+    if num_days:
+        filter = filter.since(get_filter_timestamp(num_days=num_days))
+    if num_limit:
+        filter = filter.limit(num_limit)
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
     df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
     return postprocess(df)
@@ -53,11 +52,6 @@ def query_db(Session, npub):
 def get_filter_timestamp(num_days: int):
     ts = int((datetime.now() - timedelta(days=num_days)).timestamp())
     return Timestamp.from_secs(ts)
-
-
-# def filter_days(filter: Filter, num_days: int):
-#     ts = int((datetime.now() - timedelta(days=num_days)).timestamp())
-#     return filter.since())
 
 
 # print("Getting events from relays...")

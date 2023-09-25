@@ -1,12 +1,13 @@
 import dash
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
+import numpy as np
 import plotly.express as px
 import pandas as pd
-from query import init_client, query_db, query_events_by_author
+from query import init_client, query_db, query_events
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from utils import format_table
+from utils import format_table, kind_name_dict
 
 
 # for querying network
@@ -22,7 +23,7 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
     [
-        dcc.Input(id="npub-input", type="text", placeholder="Enter npub value"),
+        dcc.Input(id="npub", type="text", placeholder="Enter npub value"),
         html.Button("Submit", id="submit-btn", n_clicks=0),
         dcc.RadioItems(
             id="toggle-btn",
@@ -57,7 +58,7 @@ app.layout = html.Div(
         Input("submit-btn", "n_clicks"),
     ],
     [
-        dash.dependencies.State("npub-input", "value"),
+        dash.dependencies.State("npub", "value"),
         dash.dependencies.State("toggle-btn", "value"),
     ],
 )
@@ -66,16 +67,29 @@ def update_graph(n_clicks, npub, toggle_value):
         return px.scatter(), "Please enter a valid npub value.", None, None
 
     if toggle_value == "network":
-        df = query_events_by_author(client, npub)
+        df = query_events(
+            client=client,
+            kind=None,
+            npub=npub,
+            num_days=1,
+            num_limit=None,
+            timeout_secs=30,
+        )
     elif toggle_value == "local":
         df = query_db(Session, npub)
 
     if df.empty:
         return px.scatter(), "No data found for the provided npub.", None, None
 
+    x_order = np.sort(df["kind"].unique())
     fig = px.histogram(
-        x=df.kind.astype(str), title=f"Histogram of events by kind for {npub}"
+        x=df.kind.astype(str),
+        title=f"Histogram of events by kind for {npub}",
+        category_orders={"kind": x_order},
     )
+    x_labels = [f"{x} ({kind_name_dict[x]})" for x in x_order]
+
+    fig.update_xaxes(tickvals=x_order, ticktext=x_labels)
 
     table_data, table_columns = format_table(df)
     return fig, "Submit button clicked!", table_data, table_columns
