@@ -71,13 +71,9 @@ app.layout = html.Div(
     ],
 )
 def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
-    if not npub:
-        return px.scatter(), "Please enter a valid npub value.", None, None
-
-    kind_value = None if not kind_value else kind_value
     num_days = int(num_days) if num_days else 1
-
-    if toggle_value == "network":
+    df = pd.DataFrame()
+    if toggle_value == "network" and client:
         df = query_events(
             client=client,
             kind=kind_value,
@@ -94,7 +90,7 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
         )
 
     if df.empty:
-        return px.scatter(), "No data found for the provided npub.", None, None
+        return px.scatter(), "No data found for the given fields", None, None
 
     x_order = np.sort(df["kind"].unique())
     fig = px.histogram(

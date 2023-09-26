@@ -16,6 +16,7 @@ def init_client():
     client.add_relay("wss://relay.primal.net")
     client.add_relay("wss://relay.mostr.pub")
     client.connect()
+    # return None if can't connect
     return client
 
 
@@ -42,10 +43,10 @@ def query_events(
 def query_db(Session, npub=None, kind=None):
     # fix: check if hex or bech32
     # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
-    pk = PublicKey.from_bech32(npub).to_hex()
     with Session() as session:
         sqla_query = session.query(Events)
         if npub:
+            pk = PublicKey.from_bech32(npub).to_hex()
             sqla_query = sqla_query.filter(Events.pubkey == pk)
         if kind:
             sqla_query = sqla_query.filter(Events.kind == int(kind))
