@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import json
 from nostr_sdk import Keys, Client, Filter, Options, PublicKey, Timestamp
-from sqla_models import Events
+from sqla_models import Event
 from utils import postprocess
 
 
@@ -44,14 +44,14 @@ def query_db(Session, npub=None, kind=None):
     # fix: check if hex or bech32
     # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
     with Session() as session:
-        sqla_query = session.query(Events)
+        sqla_query = session.query(Event)
         if npub:
             pk = PublicKey.from_bech32(npub).to_hex()
-            sqla_query = sqla_query.filter(Events.pubkey == pk)
+            sqla_query = sqla_query.filter(Event.pubkey == pk)
         if kind:
-            sqla_query = sqla_query.filter(Events.kind == int(kind))
+            sqla_query = sqla_query.filter(Event.kind == int(kind))
         results = sqla_query.all()
-    df = pd.DataFrame([r.__dict__ for r in results])
+    df = pd.DataFrame([r.__dict__ for r in results]).set_index("id")
     return postprocess(df)
 
 

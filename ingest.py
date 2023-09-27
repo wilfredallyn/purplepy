@@ -59,8 +59,8 @@ def parse_reply_tags(df):
     # https://github.com/nostr-protocol/nips#standardized-tags
     df_reply = pd.DataFrame(
         e_rows,
-        columns=["source_id", "event_id", "created_at", "kind", "relay_url", "marker"],
-    )  # .set_index(["source_id", "event_id"])
+        columns=["id", "ref_id", "created_at", "kind", "relay_url", "marker"],
+    )  # .set_index(["id", "ref_id"])
     return df_reply
 
 
@@ -93,8 +93,8 @@ def parse_mention_tags(df):
     # https://github.com/nostr-protocol/nips/blob/master/02.md#petname-scheme
     df_mention = pd.DataFrame(
         p_rows,
-        columns=["source_id", "user_id", "created_at", "kind", "relay_url", "petname"],
-    )  # .set_index(["source_id", "event_id"])
+        columns=["id", "ref_id", "created_at", "kind", "relay_url", "petname"],
+    )  # .set_index(["id", "ref_id"])
     return df_mention
 
 

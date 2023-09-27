@@ -7,11 +7,12 @@ import pandas as pd
 from query import init_client, query_db, query_events
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from utils import format_table, kind_name_dict
+from utils import format_data_table, kind_name_dict
 
 
 # for querying network
-client = init_client()
+# client = init_client()
+client = None
 
 # for querying local db
 engine = create_engine("postgresql://postgres@localhost:5432/postgres")
@@ -90,7 +91,12 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
         )
 
     if df.empty:
-        return px.scatter(), "No data found for the given fields", None, None
+        return (
+            px.scatter(template=None),
+            "No data found for the given fields",
+            None,
+            None,
+        )
 
     x_order = np.sort(df["kind"].unique())
     fig = px.histogram(
@@ -102,7 +108,7 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
 
     fig.update_xaxes(tickvals=x_order, ticktext=x_labels)
 
-    table_data, table_columns = format_table(df)
+    table_data, table_columns = format_data_table(df)
     return fig, "Submit button clicked!", table_data, table_columns
 
 
