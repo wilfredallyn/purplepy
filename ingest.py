@@ -38,7 +38,7 @@ def parse_reply_tags(df):
                 if len(lst) == 4:
                     # ["e", "1fcc...", "wss://nos.lol/", "reply"]
                     e_rows.append(
-                        [row.name, row.created_at, lst[1], row.kind, lst[2], lst[3]]
+                        [row.name, lst[1], row.created_at, row.kind, lst[2], lst[3]]
                     )
                 elif len(lst) == 3:
                     # ['e', '10c9a19..', 'wss://nostr.wine/']
@@ -96,9 +96,3 @@ def parse_mention_tags(df):
         columns=["id", "ref_id", "created_at", "kind", "relay_url", "petname"],
     )  # .set_index(["id", "ref_id"])
     return df_mention
-
-
-def get_thread(event_id, df_reply):
-    return df_reply[df_reply.event_id == event_id].sort_values(
-        "created_at", ascending=True
-    )

@@ -47,7 +47,21 @@ app.layout = html.Div(
             children=[
                 dcc.Graph(id="graph-output"),
                 html.Div(id="message-output"),
-                dash_table.DataTable(id="table-output"),
+                dash_table.DataTable(
+                    id="table-output",
+                    style_data_conditional=[
+                        {"if": {"column_id": "id"}, "width": "100px"},
+                        {"if": {"column_id": "created_at"}, "width": "150px"},
+                        {
+                            "if": {"column_id": "content"},
+                            "width": "150px",
+                            "overflow": "hidden",
+                            "textOverflow": "ellipsis",
+                            "whiteSpace": "normal",
+                        },
+                    ],
+                    page_size=25,
+                ),
             ],
         ),
     ]

@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 import pandas as pd
 import json
 from nostr_sdk import Keys, Client, Filter, Options, PublicKey, Timestamp
-from sqla_models import Event
+from sqla_models import Event, Reply
+from sqlalchemy import func
 from utils import postprocess
 
 
@@ -44,20 +45,46 @@ def query_db(Session, npub=None, kind=None):
     # fix: check if hex or bech32
     # PublicKey.from_hex('22dd8df1fed1da2574c4917146d93dcb679549aeead8f98cbbaf166d183662ad').to_bech32()
     with Session() as session:
-        sqla_query = session.query(Event)
+        subquery = (
+            session.query(Reply.ref_id, func.count(Reply.id).label("reply_count"))
+            .group_by(Reply.ref_id)
+            .subquery()
+        )
+
+        # sqla_query = session.query(Event)
+        sqla_query = session.query(Event, subquery.c.reply_count).outerjoin(
+            subquery, subquery.c.ref_id == Event.id
+        )
+
         if npub:
             pk = PublicKey.from_bech32(npub).to_hex()
             sqla_query = sqla_query.filter(Event.pubkey == pk)
         if kind:
             sqla_query = sqla_query.filter(Event.kind == int(kind))
         results = sqla_query.all()
-    df = pd.DataFrame([r.__dict__ for r in results]).set_index("id")
-    return postprocess(df)
+    data = []
+    for event, reply_count in results:
+        row = event.__dict__.copy()
+        row["reply_count"] = reply_count
+        data.append(row)
+    df = pd.DataFrame(data)
+    # df = pd.DataFrame([r.__dict__ for r in results])
+
+    if df.empty:
+        return df
+    else:
+        return postprocess(df.set_index("id"))
 
 
 def get_filter_timestamp(num_days: int):
     ts = int((datetime.now() - timedelta(days=num_days)).timestamp())
     return Timestamp.from_secs(ts)
+
+
+def get_replys_db(event_id, df_reply):
+    return df_reply[df_reply.ref_id == event_id].sort_values(
+        "created_at", ascending=True
+    )
 
 
 # print("Getting events from relays...")

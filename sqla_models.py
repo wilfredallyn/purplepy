@@ -17,24 +17,24 @@ class Event(Base):
     sig = Column(String)
 
 
-# class Reply(Base):
-#     __tablename__ = "reply"
-#     source_id = Column(String)
-#     event_id = Column(String)
-#     created_at = Column(BigInteger)
-#     kind = Column(BigInteger)
-#     relay_url = Column(String)
-#     marker = Column(String)
+class Reply(Base):
+    __tablename__ = "reply"
+    id = Column(String, primary_key=True)
+    ref_id = Column(String)
+    created_at = Column(BigInteger)
+    kind = Column(BigInteger)
+    relay_url = Column(String)
+    marker = Column(String)
 
 
-# class Mention(Base):
-#     __tablename__ = "mention"
-#     source_id = Column(String)
-#     user_id = Column(String)
-#     created_at = Column(BigInteger)
-#     kind = Column(BigInteger)
-#     relay_url = Column(String)
-#     petname = Column(String)
+class Mention(Base):
+    __tablename__ = "mention"
+    id = Column(String, primary_key=True)
+    ref_id = Column(String)
+    created_at = Column(BigInteger)
+    kind = Column(BigInteger)
+    relay_url = Column(String)
+    petname = Column(String)
 
 
 # class Users(Base):
