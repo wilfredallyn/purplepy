@@ -1,11 +1,11 @@
 import dash
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
+from db import get_sql_engine
 import numpy as np
 import plotly.express as px
 import pandas as pd
 from query import init_client, query_db, query_events
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from utils import format_data_table, kind_name_dict
 
@@ -15,7 +15,7 @@ from utils import format_data_table, kind_name_dict
 client = None
 
 # for querying local db
-engine = create_engine("postgresql://postgres@localhost:5432/postgres")
+engine = get_sql_engine()
 Session = sessionmaker(bind=engine)
 # Base = declarative_base()
 
