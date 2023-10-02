@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from query import query_events
 from sqlalchemy import create_engine
@@ -28,6 +29,31 @@ def init_db(client):
             "tags_relay_url": JSONB,
         },
     )
+
+
+def parse_user_metadata(df):
+    df_metadata = df[df.kind == 0].copy().reset_index(drop=True)
+    df_content = (
+        df_metadata["content"]
+        .apply(json.loads)
+        .apply(pd.Series)
+        .reset_index(drop=True)
+        .drop("pubkey", axis=1)
+    )
+    df_user = (
+        (
+            pd.concat(
+                [
+                    df_metadata["pubkey"],
+                    df_content,
+                ],
+                axis=1,
+            )
+        )
+        .rename(columns={"pubkey": "id"})
+        .set_index("id")
+    )
+    return df_user
 
 
 def parse_reply_tags(df):

@@ -37,11 +37,19 @@ class Mention(Base):
     petname = Column(String)
 
 
-# class Users(Base):
-#     pubkey = Column(String, primary_key=True)
-#     # bech32
-#     relays = Column(JSONB)
-#     # other metadata
+class User(Base):
+    __tablename__ = "user"
+    id = Column(String, primary_key=True)
+    name = Column(String)  # display_name/name/displayName
+    about = Column(String)
+    website = Column(String)
+    nip05 = Column(String)
+    lud16 = Column(String)
+    picture = Column(String)
+    banner = Column(String)
+    created_at = Column(BigInteger)
+    # bech32
+    # relays = Column(JSONB)
 
 
 # ['e',
