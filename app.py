@@ -52,6 +52,7 @@ app.layout = html.Div(
                     style_data_conditional=[
                         {"if": {"column_id": "id"}, "width": "100px"},
                         {"if": {"column_id": "created_at"}, "width": "150px"},
+                        {"if": {"column_id": "pubkey"}, "width": "150px"},
                         {
                             "if": {"column_id": "content"},
                             "width": "150px",

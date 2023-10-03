@@ -51,7 +51,6 @@ def query_db(Session, npub=None, kind=None):
             .subquery()
         )
 
-        # sqla_query = session.query(Event)
         sqla_query = session.query(Event, subquery.c.reply_count).outerjoin(
             subquery, subquery.c.ref_id == Event.id
         )
@@ -62,6 +61,7 @@ def query_db(Session, npub=None, kind=None):
         if kind:
             sqla_query = sqla_query.filter(Event.kind == int(kind))
         results = sqla_query.all()
+
     data = []
     for event, reply_count in results:
         row = event.__dict__.copy()
