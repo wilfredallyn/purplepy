@@ -1,7 +1,8 @@
 import json
 import pandas as pd
 from query import query_events
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
+from sqla_models import User
 
 
 def init_db(client):
@@ -122,3 +123,16 @@ def parse_mention_tags(df):
         columns=["id", "ref_id", "created_at", "kind", "relay_url", "petname"],
     )  # .set_index(["id", "ref_id"])
     return df_mention
+
+
+def write_tables(df, engine):
+    df_reply = parse_reply_tags(df)
+    df_reply.to_sql("reply", engine, if_exists="replace")
+
+    df_mention = parse_mention_tags(df)
+    df_mention.to_sql("mention", engine, if_exists="replace")
+
+    df_user = parse_user_metadata(df)
+    user_cols = [col.name for col in inspect(User).columns]
+    user_cols = [col for col in user_cols if col != "id"]
+    df_user[user_cols].to_sql("user", engine, if_exists="replace")
