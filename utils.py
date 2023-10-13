@@ -82,11 +82,26 @@ def format_data_table(df):
     if df.index.name == "id":
         df["id_hex"] = df.index
         df["id"] = df["id_hex"].apply(lambda x: EventId.from_hex(x).to_bech32())
-        df["id"] = df["id"].apply(lambda x: x[:15] + "..." if len(x) > 15 else x)
-    cols = ["id", "created_at", "pubkey", "kind", "kind_name", "content", "reply_count"]
+        df["id_short"] = df["id"].apply(lambda x: x[:15] + "..." if len(x) > 15 else x)
+
+    output_id_col = "id"  # "id_short" if want to shorten text
+    cols = [
+        output_id_col,
+        "created_at",
+        "pubkey",
+        "kind",
+        "kind_name",
+        "content",
+        "reply_count",
+    ]
 
     df["pubkey"] = df["pubkey"].apply(add_link)
     table_data = df[cols].to_dict("records")
+
+    tooltip_data = [
+        {output_id_col: {"value": i["id"], "type": "markdown"}}
+        for i in df[["id"]].to_dict("records")
+    ]
 
     table_columns = [
         {"name": i, "id": i, "type": "text", "presentation": "markdown"}
@@ -94,7 +109,7 @@ def format_data_table(df):
         else {"name": i, "id": i}
         for i in cols
     ]
-    return table_data, table_columns
+    return table_data, table_columns, tooltip_data
 
 
 def shorten_text(text: str, max_len: int):

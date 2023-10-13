@@ -87,6 +87,7 @@ app.layout = html.Div(
         Output("message-output", "children"),
         Output("table-output", "data"),
         Output("table-output", "columns"),
+        Output("table-output", "tooltip_data"),
     ],
     [
         Input("submit-btn", "n_clicks"),
@@ -123,6 +124,7 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
             "No data found for the given fields",
             None,
             None,
+            None,
         )
 
     x_order = np.sort(df["kind"].unique())
@@ -135,8 +137,8 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
 
     fig.update_xaxes(tickvals=x_order, ticktext=x_labels)
 
-    table_data, table_columns = format_data_table(df)
-    return fig, "Submit button clicked!", table_data, table_columns
+    table_data, table_columns, tooltip_data = format_data_table(df)
+    return fig, "Submit button clicked!", table_data, table_columns, tooltip_data
 
 
 if __name__ == "__main__":
