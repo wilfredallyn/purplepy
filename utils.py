@@ -85,6 +85,17 @@ def format_data_table(df):
         df["id_short"] = df["id"].apply(lambda x: x[:15] + "..." if len(x) > 15 else x)
 
     output_id_col = "id"  # "id_short" if want to shorten text
+
+    df["pubkey"] = df["pubkey"].apply(lambda pubkey: add_markdown_link("/user", pubkey))
+    df[output_id_col] = df[output_id_col].apply(
+        lambda id: add_markdown_link("https://njump.me", id)
+    )
+
+    tooltip_data = [
+        {output_id_col: {"value": i["id"], "type": "markdown"}}
+        for i in df[["id"]].to_dict("records")
+    ]
+
     cols = [
         output_id_col,
         "created_at",
@@ -95,17 +106,11 @@ def format_data_table(df):
         "reply_count",
     ]
 
-    df["pubkey"] = df["pubkey"].apply(add_link)
     table_data = df[cols].to_dict("records")
-
-    tooltip_data = [
-        {output_id_col: {"value": i["id"], "type": "markdown"}}
-        for i in df[["id"]].to_dict("records")
-    ]
 
     table_columns = [
         {"name": i, "id": i, "type": "text", "presentation": "markdown"}
-        if i == "pubkey"
+        if i in ["pubkey", output_id_col]
         else {"name": i, "id": i}
         for i in cols
     ]
@@ -116,7 +121,8 @@ def shorten_text(text: str, max_len: int):
     pass
 
 
-def add_link(text):
+def add_markdown_link(url, text):
+    # url: /user, https://njump.me
     display_text = text[:15] + "..." if len(text) > 15 else text
-    url = f"/user/{text}"
-    return f"[{display_text}]({url})"
+    formatted_url = f"{url}/{text}"
+    return f"[{display_text}]({formatted_url})"
