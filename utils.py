@@ -2,6 +2,7 @@ from datetime import datetime
 from nostr_sdk import EventId
 
 
+# https://github.com/nostr-protocol/nips#event-kinds
 kind_name_dict = {
     0: "Metadata",
     1: "Short Text Note",
@@ -55,6 +56,9 @@ kind_name_dict = {
     31989: "Handler recommendation",
     31990: "Handler information",
     34550: "Community Definition",
+    65000: "Job feedback",  # https://github.com/nostr-protocol/nips/blob/vending-machine/90.md#kinds
+    65001: "Job result",
+    # 65002-66000	Job request kinds
 }
 
 

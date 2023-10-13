@@ -21,6 +21,7 @@ Session = sessionmaker(bind=engine)
 
 
 app = dash.Dash(__name__)
+# app = dash.Dash(__name__, use_pages=True)
 
 app.layout = html.Div(
     [
@@ -65,6 +66,17 @@ app.layout = html.Div(
                 ),
             ],
         ),
+        # html.Div(
+        #     [
+        #         html.Div(
+        #             dcc.Link(
+        #                 f"{page['name']} - {page['path']}", href=page["relative_path"]
+        #             )
+        #         )
+        #         for page in dash.page_registry.values()
+        #     ]
+        # ),
+        # dash.page_container,
     ]
 )
 
@@ -119,7 +131,7 @@ def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
         title=f"Histogram of events by kind for {npub}",
         category_orders={"kind": x_order},
     )
-    x_labels = [f"{x} ({kind_name_dict[x]})" for x in x_order]
+    x_labels = [f"{x} ({kind_name_dict[x]})" for x in x_order if x in kind_name_dict]
 
     fig.update_xaxes(tickvals=x_order, ticktext=x_labels)
 
