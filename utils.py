@@ -62,16 +62,26 @@ kind_name_dict = {
 }
 
 
-def postprocess(df):
+def postprocess(df, dedupe: bool = True):
     if "kind" in df.columns:
         df["kind_name"] = df["kind"].map(kind_name_dict)
     if "created_at" in df.columns:
         df["created_at"] = df["created_at"].apply(
             lambda x: datetime.fromtimestamp(x).strftime("%Y-%m-%d %I:%M%p")
+            if isinstance(x, int)
+            else x
         )
         df = df.sort_values(["created_at"], ascending=True)
     if "_sa_instance_state" in df.columns:
         df = df.drop("_sa_instance_state", axis=1)
+
+    if dedupe:
+        # convert tags to str since can't dedupe list (unhashable)
+        dedup_cols = ["tags_str" if item == "tags" else item for item in df.columns]
+        if "tags" in df.columns:
+            df["tags_str"] = df["tags"].apply(str)
+        dedup_idx = ~df[dedup_cols].duplicated(keep="first")
+        df = df[dedup_idx]
     return df
 
 

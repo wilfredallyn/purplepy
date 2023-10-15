@@ -57,6 +57,7 @@ def query_db(Session, npub=None, kind=None):
 
         if npub:
             pk = PublicKey.from_bech32(npub).to_hex()
+            print(pk)
             sqla_query = sqla_query.filter(Event.pubkey == pk)
         if kind:
             sqla_query = sqla_query.filter(Event.kind == int(kind))
@@ -68,12 +69,10 @@ def query_db(Session, npub=None, kind=None):
         row["reply_count"] = reply_count
         data.append(row)
     df = pd.DataFrame(data)
-    # df = pd.DataFrame([r.__dict__ for r in results])
-
     if df.empty:
         return df
     else:
-        return postprocess(df.set_index("id"))
+        return postprocess(df.set_index("id"), dedupe=True)
 
 
 def get_filter_timestamp(num_days: int):
