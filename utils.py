@@ -136,3 +136,21 @@ def add_markdown_link(url, text):
     display_text = text[:15] + "..." if len(text) > 15 else text
     formatted_url = f"{url}/{text}"
     return f"[{display_text}]({formatted_url})"
+
+
+def parse_datetime(ts):
+    if isinstance(ts, int):  # Unix timestamp
+        return datetime.fromtimestamp(ts)
+    elif isinstance(ts, str) and len(ts) == 18:
+        return datetime.strptime(ts, "%Y-%m-%d %I:%M%p")
+    else:
+        raise ValueError("Unexpected format for 'created_at' column")
+
+
+def parse_datetime_str(ts):
+    if isinstance(ts, int):  # Unix timestamp
+        return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %I:%M%p")
+    elif isinstance(ts, str) and len(ts) == 18:
+        return ts
+    else:
+        raise ValueError("Unexpected format for 'created_at' column")

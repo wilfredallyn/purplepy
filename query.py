@@ -57,7 +57,6 @@ def query_db(Session, npub=None, kind=None):
 
         if npub:
             pk = PublicKey.from_bech32(npub).to_hex()
-            print(pk)
             sqla_query = sqla_query.filter(Event.pubkey == pk)
         if kind:
             sqla_query = sqla_query.filter(Event.kind == int(kind))

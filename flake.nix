@@ -47,6 +47,7 @@
         pandas
         pip
         psycopg2
+        pytest
         sqlalchemy
       ]);
       postgres = pkgs.postgresql;
