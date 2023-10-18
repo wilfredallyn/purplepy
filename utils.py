@@ -77,11 +77,11 @@ def postprocess(df, dedupe: bool = True):
 
     if dedupe:
         # convert tags to str since can't dedupe list (unhashable)
-        dedup_cols = ["tags_str" if item == "tags" else item for item in df.columns]
+        dedup_cols = ["tags_str" if col == "tags" else col for col in df.columns]
         if "tags" in df.columns:
             df["tags_str"] = df["tags"].apply(str)
         dedup_idx = ~df[dedup_cols].duplicated(keep="first")
-        df = df[dedup_idx]
+        df = df[dedup_idx].drop("tags_str", axis=1)
     return df
 
 
