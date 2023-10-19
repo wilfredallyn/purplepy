@@ -96,9 +96,15 @@ def format_data_table(df):
 
     output_id_col = "id"  # "id_short" if want to shorten text
 
-    df["pubkey"] = df["pubkey"].apply(lambda pubkey: add_markdown_link("/user", pubkey))
-    df[output_id_col] = df[output_id_col].apply(
-        lambda id: add_markdown_link("https://njump.me", id)
+    df["pubkey"] = df["pubkey"].apply(
+        lambda pubkey: add_markdown_link(url="/user", text=pubkey)
+    )
+
+    df[output_id_col] = df.apply(
+        lambda row: add_markdown_link(
+            url="https://njump.me", text=row[output_id_col], kind_num=row["kind"]
+        ),
+        axis=1,
     )
 
     tooltip_data = [
@@ -131,11 +137,18 @@ def shorten_text(text: str, max_len: int):
     pass
 
 
-def add_markdown_link(url, text):
+def add_markdown_link(url, text, kind_num=None):
     # url: /user, https://njump.me
+    linked_kinds = [
+        1,  # short text note
+    ]
     display_text = text[:15] + "..." if len(text) > 15 else text
     formatted_url = f"{url}/{text}"
-    return f"[{display_text}]({formatted_url})"
+    if kind_num and kind_num in linked_kinds:
+        text = f"[{display_text}]({formatted_url})"
+    else:
+        text = display_text
+    return text
 
 
 def parse_datetime(ts):
