@@ -9,6 +9,23 @@
   outputs = { self, nixpkgs, utils }: utils.lib.eachSystem ["x86_64-linux" "x86_64-darwin" "aarch64-darwin"] (system: let
     pkgs = nixpkgs.legacyPackages.${system};
 
+    # remove wheeldata after updating nixpkgs: dash-bootstrap-components, nostr-sdk
+    dashBootstrapComponents = let
+      dashBootstrapComponentsWheelData = {
+        url = "https://files.pythonhosted.org/packages/cd/2a/cf963336e8b6745406d357e2f2b33ff1f236531fcadbe250096931855ec0/dash_bootstrap_components-1.5.0-py3-none-any.whl";
+        sha256 = "b487fec1a85e3d6a8564fe04c0a9cd9e846f75ea9e563456ed3879592889c591";
+      };
+    in pkgs.python310Packages.buildPythonPackage rec {
+      pname = "dash-bootstrap-components";
+      version = "1.5.0";
+      format = "wheel";
+      src = pkgs.fetchurl {
+        url = dashBootstrapComponentsWheelData.url;
+        sha256 = dashBootstrapComponentsWheelData.sha256;
+      };
+      # propagatedBuildInputs = [];
+    };
+
     nostrSdk = let
       wheelData = {
         "x86_64-linux" = {
@@ -33,7 +50,7 @@
         url = currentWheel.url;
         sha256 = currentWheel.sha256;
       };
-      # propagatedBuildInputs = [];  # Add Python dependencies if any
+      # propagatedBuildInputs = [];
     };
 
   in rec {
@@ -41,6 +58,7 @@
       pythonEnv = pkgs.python310.withPackages (ps: with ps; [
         black
         dash
+        dashBootstrapComponents
         jupyter
         nostrSdk
         numpy
