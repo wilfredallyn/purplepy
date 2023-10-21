@@ -1,6 +1,6 @@
 import dash
 from dash import dash_table, dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from db import get_sql_engine
 import numpy as np
 import plotly.express as px
@@ -93,10 +93,10 @@ app.layout = html.Div(
         Input("submit-btn", "n_clicks"),
     ],
     [
-        dash.dependencies.State("npub", "value"),
-        dash.dependencies.State("kind", "value"),
-        dash.dependencies.State("num_days", "value"),
-        dash.dependencies.State("toggle-btn", "value"),
+        State("npub", "value"),
+        State("kind", "value"),
+        State("num_days", "value"),
+        State("toggle-btn", "value"),
     ],
 )
 def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
