@@ -3,9 +3,7 @@ import dash
 from dash import callback, dcc, html
 from dash.dependencies import Input, Output, State
 from db import get_sql_engine
-import numpy as np
-import pandas as pd
-from plot import plot_by_datetime, plot_histogram
+from plot import plot_histogram
 import plotly.express as px
 from query import query_db
 from sqlalchemy.orm import sessionmaker
@@ -21,15 +19,15 @@ def layout(npub=None):
     layout = html.Div(
         [
             dcc.Store(id="store-data", data={"npub": npub}),
-            dcc.Dropdown(
-                id="plot-type-dropdown",
+            dcc.Checklist(
+                id="plot-type-checklist",
                 options=[
-                    {"label": "Histogram", "value": "histogram"},
+                    {"label": "Kind", "value": "kind"},
                     {"label": "Day of week", "value": "day_of_week"},
                     {"label": "Hour of day", "value": "hour_of_day"},
                 ],
-                value="histogram",  # default value
-                clearable=False,
+                value=["kind"],
+                inline=False,
                 style={"width": "50%", "maxWidth": "400px"},
             ),
             dcc.Loading(
@@ -42,15 +40,14 @@ def layout(npub=None):
         ]
     )
     return layout
-    # return html.Div(f"The user requested: {npub}.")
 
 
 @callback(
     Output("graph-output", "figure"),
     Input("store-data", "data"),
-    Input("plot-type-dropdown", "value"),
+    Input("plot-type-checklist", "value"),
 )
-def update_graph(data, plot_type):
+def update_graph(data, groupby_cols):
     npub = data["npub"]
     df = query_db(
         Session=Session,
@@ -62,14 +59,7 @@ def update_graph(data, plot_type):
     if df.empty:
         return (px.scatter(template=None),)
 
-    if plot_type == "histogram":
-        fig = plot_histogram(df, title=f"Histogram of events by kind for {npub}")
-    elif plot_type == "day_of_week":
-        fig = plot_by_datetime(
-            df, groupby_type="day", title=f"Histogram of events by day for {npub}"
-        )
-    elif plot_type == "hour_of_day":
-        fig = plot_by_datetime(
-            df, groupby_type="hour", title=f"Histogram of events by hour for {npub}"
-        )
+    fig = plot_histogram(
+        df, groupby_cols=groupby_cols, title=f"Histogram of events for {npub}"
+    )
     return fig

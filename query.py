@@ -68,6 +68,7 @@ def query_db(Session, npub=None, kind=None):
         row["reply_count"] = reply_count
         data.append(row)
     df = pd.DataFrame(data)
+    df["kind"] = df["kind"].astype(str)
     if df.empty:
         return df
     else:
