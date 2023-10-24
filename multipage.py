@@ -25,7 +25,7 @@ app.layout = dbc.Container(
             [
                 dbc.Col(
                     html.Div(
-                        "Python Multipage App with Dash",
+                        "purple-py",
                         style={"fontSize": 50, "textAlign": "center"},
                     )
                 )
