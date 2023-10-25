@@ -106,8 +106,9 @@
         NEO4J_PLUGINS_DIR="$PWD/neo4j-plugins"
         NEO4J_LIB_DIR="$PWD/neo4j-lib"
         NEO4J_LICENSES_DIR="$PWD/neo4j-licenses"
+        NEO4J_IMPORT_DIR="$PWD/neo4j-import"
 
-        mkdir -p $NEO4J_CONF_DIR $NEO4J_DATA_DIR $NEO4J_LOGS_DIR $NEO4J_RUN_DIR $NEO4J_PLUGINS_DIR $NEO4J_LIB_DIR $NEO4J_LICENSES_DIR
+        mkdir -p $NEO4J_CONF_DIR $NEO4J_DATA_DIR $NEO4J_LOGS_DIR $NEO4J_RUN_DIR $NEO4J_PLUGINS_DIR $NEO4J_LIB_DIR $NEO4J_LICENSES_DIR $NEO4J_IMPORT_DIR
 
         NEO4J_PATH=$(dirname $(which neo4j))
 
@@ -119,8 +120,10 @@
         sed -i "s|#dbms.directories.plugins=.*|dbms.directories.plugins=$NEO4J_PLUGINS_DIR|" $NEO4J_CONF_DIR/neo4j.conf
         sed -i "s|#dbms.directories.lib=.*|dbms.directories.lib=$NEO4J_LIB_DIR|" $NEO4J_CONF_DIR/neo4j.conf
         sed -i "s|#dbms.directories.licenses=.*|dbms.directories.licenses=$NEO4J_LICENSES_DIR|" $NEO4J_CONF_DIR/neo4j.conf
+        sed -i "s|^\(#\?\)dbms.directories.import=.*|dbms.directories.import=$NEO4J_IMPORT_DIR|" $NEO4J_CONF_DIR/neo4j.conf
 
         export NEO4J_CONF=$NEO4J_CONF_DIR
+        neo4j-admin set-initial-password neo4j
 
         echo "type 'pg_ctl start -D pgsql' to start postgres"
         echo "type 'neo4j start' to start neo4j"
