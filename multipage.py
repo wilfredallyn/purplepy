@@ -2,15 +2,14 @@ import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
+
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
+
+
 sidebar = dbc.Nav(
     [
         dbc.NavLink(
-            [
-                html.Div(page["name"], className="ms-2"),
-            ],
-            href=page["path"],
-            active="exact",
+            html.Div(page["name"], className="ms-2"), href=page["path"], active="exact"
         )
         for page in dash.page_registry.values()
     ],
@@ -24,10 +23,7 @@ app.layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(
-                        "purple-py",
-                        style={"fontSize": 50, "textAlign": "center"},
-                    )
+                    html.Div("purple-py", style={"fontSize": 50, "textAlign": "center"})
                 )
             ]
         ),
@@ -42,6 +38,5 @@ app.layout = dbc.Container(
     fluid=True,
 )
 
-
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run_server(debug=False)
