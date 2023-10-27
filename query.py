@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from ingest import parse_mention_tags, parse_reply_tags
 import pandas as pd
 import json
 from nostr_sdk import Keys, Client, Filter, Options, PublicKey, Timestamp
@@ -21,7 +22,7 @@ def init_client():
     return client
 
 
-def query_events(
+def query_relay(
     client, npub=None, kind=None, num_days=None, num_limit=None, timeout_secs=30
 ):
     filter = Filter()
@@ -38,7 +39,10 @@ def query_events(
         filter = filter.limit(num_limit)
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
     df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
-    return postprocess(df)
+    df = postprocess(df)
+    df_reply = parse_reply_tags(df)
+    df_mention = parse_mention_tags(df)
+    return df, df_reply, df_mention
 
 
 def query_db(Session, npub=None, kind=None):

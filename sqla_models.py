@@ -27,6 +27,7 @@ class Follow(Base):
 class Reply(Base):
     __tablename__ = "reply"
     id = Column(String, primary_key=True)
+    pubkey = Column(String)
     ref_id = Column(String)
     created_at = Column(BigInteger)
     kind = Column(BigInteger)
@@ -37,6 +38,7 @@ class Reply(Base):
 class Mention(Base):
     __tablename__ = "mention"
     id = Column(String, primary_key=True)
+    pubkey = Column(String)
     ref_id = Column(String)
     created_at = Column(BigInteger)
     kind = Column(BigInteger)
@@ -46,7 +48,7 @@ class Mention(Base):
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(String, primary_key=True)
+    pubkey = Column(String, primary_key=True)
     name = Column(String)
     about = Column(String)
     website = Column(String)
