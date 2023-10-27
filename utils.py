@@ -1,6 +1,5 @@
 from datetime import datetime
-from nostr_sdk import EventId
-
+from nostr_sdk import EventId, PublicKey
 
 # https://github.com/nostr-protocol/nips#event-kinds
 kind_name_dict = {
@@ -60,6 +59,14 @@ kind_name_dict = {
     65001: "Job result",
     # 65002-66000	Job request kinds
 }
+
+
+def get_npub(pubkey):
+    return PublicKey.from_hex(pubkey).to_bech32()
+
+
+def get_hex(npub):
+    return PublicKey.from_bech32(npub).to_hex()
 
 
 def postprocess(df, dedupe: bool = True):

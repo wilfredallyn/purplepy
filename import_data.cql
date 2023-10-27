@@ -1,5 +1,5 @@
 // df_kind_3 = query_db(Session=Session, kind=3)
-// df_follows = parse_follows(df_kind_3)
+// df_follows = parse_tags(df_kind_3, output_col="follows", filter_tag="p")
 // df_follows.to_sql('follow', engine, if_exists="replace")
 // df_follows.to_csv("neo4j-import/follows.csv", index=False)
 
