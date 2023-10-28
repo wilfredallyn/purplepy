@@ -60,6 +60,7 @@
         dash
         dashBootstrapComponents
         jupyter
+        neo4j
         nostrSdk
         numpy
         pandas

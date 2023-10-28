@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from ingest import parse_mention_tags, parse_reply_tags
 import pandas as pd
 import json
 from nostr_sdk import Keys, Client, Filter, Options, PublicKey, Timestamp
@@ -40,9 +39,9 @@ def query_relay(
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
     df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
     df = postprocess(df)
-    df_reply = parse_reply_tags(df)
-    df_mention = parse_mention_tags(df)
-    return df, df_reply, df_mention
+    # df_reply = parse_reply_tags(df)
+    # df_mention = parse_mention_tags(df)
+    return df
 
 
 def query_db(Session, npub=None, kind=None):
@@ -89,6 +88,18 @@ def get_replys_db(event_id, df_reply):
     return df_reply[df_reply.ref_id == event_id].sort_values(
         "created_at", ascending=True
     )
+
+
+def get_table(Session, sqla_table):
+    with Session() as session:
+        sqla_query = session.query(sqla_table)
+        results = sqla_query.all()
+    df = pd.DataFrame([r.__dict__ for r in results])
+    df = df.drop("_sa_instance_state", axis=1)
+
+    primary_key_col = [key.name for key in sqla_table.__table__.primary_key][0]
+    df = df.set_index(primary_key_col)
+    return df
 
 
 # print("Getting events from relays...")
