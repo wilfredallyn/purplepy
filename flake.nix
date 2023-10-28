@@ -67,6 +67,7 @@
         pip
         psycopg2
         pytest
+        python-dotenv
         sqlalchemy
       ]);
       postgres = pkgs.postgresql;
