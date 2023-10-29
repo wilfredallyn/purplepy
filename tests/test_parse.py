@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from parse import parse_reactions
+from parse import parse_follows, parse_reactions
 
 
 @pytest.fixture
@@ -26,6 +26,32 @@ def reaction_with_multiple_tags():
         "tags": [[["e", "e_id1"], ["p", "p_id1"], ["e", "e_id2"], ["p", "p_id2"]]],
     }
     return pd.DataFrame(event)
+
+
+@pytest.fixture
+def follow_event():
+    # https://github.com/nostr-protocol/nips/blob/master/02.md
+    event = {
+        "id": ["id123"],
+        "pubkey": ["pubkey123"],
+        "kind": 3,
+        "created_at": [1695510784],
+        "tags": [[["p", "p_id1"], ["p", "p_id2"]]],
+    }
+    return pd.DataFrame(event)
+
+
+def test_parse_follow(follow_event):
+    df = parse_follows(follow_event)
+    expected = pd.DataFrame(
+        {
+            "id": follow_event.loc[0, "id"],
+            "pubkey": follow_event.loc[0, "pubkey"],
+            "created_at": follow_event.loc[0, "created_at"],
+            "p": [item[1] for item in follow_event.loc[0, "tags"] if item[0] == "p"],
+        }
+    )
+    pd.testing.assert_frame_equal(df, expected)
 
 
 def test_parse_reaction_with_single_tags(reaction_with_single_tags):
