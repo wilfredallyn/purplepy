@@ -109,13 +109,13 @@ def parse_mention_tags(df):
         columns=[
             "id",
             "pubkey",
-            "ref_id",
+            "ref_pubkey",
             "created_at",
             "kind",
             "relay_url",
             "petname",
         ],
-    )  # .set_index(["id", "ref_id"])
+    )
     return df_mention
 
 
@@ -125,7 +125,7 @@ def parse_mention_row(row):
         if len(lst) == 4:
             # ['p', '97c70a...', 'wss://relayable.org', 'hodlbod']
             # ['p', 'fa984b..', '', 'mention' ]
-            # return [id, pubkey, ref_id, created_at, kind, relay_url, petname]
+            # return [id, pubkey, ref_pubkey, created_at, kind, relay_url, petname]
             return [
                 row.name,
                 row.pubkey,
@@ -138,7 +138,7 @@ def parse_mention_row(row):
         elif len(lst) == 3:
             # ['p', 'fa984bd...', 'pablof7z']
             # ['p', 'b708f73...', 'wss://nostr-relay.wlvs.space']
-            # return [id, pubkey, ref_id, created_at, kind, relay_url, petname]
+            # return [id, pubkey, ref_pubkey, created_at, kind, relay_url, petname]
             return [
                 row.name,
                 row.pubkey,
@@ -151,7 +151,7 @@ def parse_mention_row(row):
 
         elif len(lst) == 2:
             # ['p', 'ee11a5']
-            # return [id, pubkey, ref_id, created_at, kind, relay_url, petname]
+            # return [id, pubkey, ref_pubkey, created_at, kind, relay_url, petname]
             return [row.name, row.pubkey, lst[1], row.created_at, row.kind, None, None]
         elif len(lst) > 4:
             print(f"{row.name}: {lst}")

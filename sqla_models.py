@@ -39,7 +39,7 @@ class Mention(Base):
     __tablename__ = "mention"
     id = Column(String, primary_key=True)
     pubkey = Column(String)
-    ref_id = Column(String)
+    ref_pubkey = Column(String)
     created_at = Column(BigInteger)
     kind = Column(BigInteger)
     relay_url = Column(String)
