@@ -23,14 +23,26 @@ def parse_user_metadata(df):
     return df_user
 
 
-def parse_tags(df, output_col, filter_tag=None):
-    # filter_tag = "p", "e", etc.
-    cols = ["pubkey", "created_at", "tags"]
-    df = df.reset_index(drop=True)[cols].explode("tags")
+def parse_tags(df, filter_tag=None, keep_last=False):
+    # filter_tag = "p", "e", ["p", "e"], etc.
+    cols = ["id", "pubkey", "created_at", "tags"]
+    df = df.reset_index()[cols].explode("tags")
+    df["tag_type"] = df["tags"].str[0]
+
     if filter_tag:
-        df = df[df["tags"].str[0] == filter_tag]
-    df[output_col] = df["tags"].str[1]
-    df = df.drop(columns="tags").reset_index(drop=True)
+        if isinstance(filter_tag, str):
+            filter_tag = [filter_tag]
+
+        df = df[df["tags"].str[0].isin(filter_tag)]
+        for tag in filter_tag:
+            mask = df["tag_type"] == tag
+            df.loc[mask, tag] = df.loc[mask, "tags"].str[1]
+
+    df = df.drop(columns=["tags", "tag_type"]).reset_index(drop=True)
+
+    # save last p, e tags for reactions https://github.com/nostr-protocol/nips/blob/master/25.md#tags
+    if keep_last:
+        df = df.groupby(["id", "pubkey"], as_index=False).last()
     return df
 
 
@@ -40,6 +52,7 @@ def parse_reply_tags(df):
     e_rows = df.apply(parse_reply_row, axis=1).dropna().tolist()
 
     # https://github.com/nostr-protocol/nips#standardized-tags
+    # https://github.com/nostr-protocol/nips/blob/master/10.md#marked-e-tags-preferred
     df_reply = pd.DataFrame(
         e_rows,
         columns=["id", "pubkey", "ref_id", "created_at", "kind", "relay_url", "marker"],
@@ -90,6 +103,7 @@ def parse_mention_tags(df):
     p_rows = df.apply(parse_mention_row, axis=1).dropna().tolist()
 
     # https://github.com/nostr-protocol/nips/blob/master/02.md#petname-scheme
+    # https://github.com/nostr-protocol/nips/blob/master/10.md#the-p-tag
     df_mention = pd.DataFrame(
         p_rows,
         columns=[
@@ -143,3 +157,15 @@ def parse_mention_row(row):
             print(f"{row.name}: {lst}")
             raise ValueError("> 4 fields for p tags")
     return None
+
+
+def parse_follows(df):
+    df_follows = parse_tags(df[df["kind"] == 3], filter_tag="p")
+    return df_follows
+
+
+def parse_reactions(df):
+    df_reactions = parse_tags(
+        df[df["kind"] == 7], filter_tag=["e", "p"], keep_last=True
+    )
+    return df_reactions
