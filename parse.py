@@ -23,9 +23,11 @@ def parse_user_metadata(df):
     return df_user
 
 
-def parse_tags(df, filter_tag=None, keep_last=False):
+def parse_tags(df, filter_tag=None, keep_col=None, keep_last=False):
     # filter_tag = "p", "e", ["p", "e"], etc.
     cols = ["id", "pubkey", "created_at", "tags"]
+    if keep_col:
+        cols.append(keep_col)
     df = df.reset_index()[cols].explode("tags")
     df["tag_type"] = df["tags"].str[0]
 
@@ -166,6 +168,6 @@ def parse_follows(df):
 
 def parse_reactions(df):
     df_reactions = parse_tags(
-        df[df["kind"] == 7], filter_tag=["e", "p"], keep_last=True
+        df[df["kind"] == 7], filter_tag=["e", "p"], keep_col="content", keep_last=True
     )
     return df_reactions

@@ -9,6 +9,7 @@ def reaction_with_single_tags():
         "id": ["id123"],
         "pubkey": ["pubkey123"],
         "kind": 7,
+        "content": "+",
         "created_at": [1695510784],
         "tags": [[["e", "e_id"], ["p", "p_id"]]],
     }
@@ -22,6 +23,7 @@ def reaction_with_multiple_tags():
         "id": ["id123"],
         "pubkey": ["pubkey123"],
         "kind": 7,
+        "content": "+",
         "created_at": [1695510784],
         "tags": [[["e", "e_id1"], ["p", "p_id1"], ["e", "e_id2"], ["p", "p_id2"]]],
     }
@@ -61,12 +63,13 @@ def test_parse_reaction_with_single_tags(reaction_with_single_tags):
         {
             "id": reaction_with_single_tags.loc[0, "id"],
             "pubkey": reaction_with_single_tags.loc[0, "pubkey"],
+            "content": reaction_with_single_tags.loc[0, "content"],
             "created_at": reaction_with_single_tags.loc[0, "created_at"],
             "e": [item[1] for item in tags if item[0] == "e"],
             "p": [item[1] for item in tags if item[0] == "p"],
         }
     )
-    pd.testing.assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, check_like=True)
 
 
 def test_parse_reaction_with_multiple_tags(reaction_with_multiple_tags):
@@ -76,6 +79,7 @@ def test_parse_reaction_with_multiple_tags(reaction_with_multiple_tags):
         {
             "id": reaction_with_multiple_tags.loc[0, "id"],
             "pubkey": reaction_with_multiple_tags.loc[0, "pubkey"],
+            "content": reaction_with_multiple_tags.loc[0, "content"],
             "created_at": reaction_with_multiple_tags.loc[0, "created_at"],
             "e": [
                 next((tag[1] for tag in reversed(tags) if tag[0] == "e"), None)
@@ -83,4 +87,4 @@ def test_parse_reaction_with_multiple_tags(reaction_with_multiple_tags):
             "p": [next((tag[1] for tag in reversed(tags) if tag[0] == "p"), None)],
         }
     )
-    pd.testing.assert_frame_equal(df, expected)
+    pd.testing.assert_frame_equal(df, expected, check_like=True)
