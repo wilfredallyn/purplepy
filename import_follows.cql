@@ -1,17 +1,27 @@
-// df_kind_3 = query_db(Session=Session, kind=3)
-// df_follows = parse_tags(df_kind_3, output_col="follows", filter_tag="p")
-// df_follows.to_sql('follow', engine, if_exists="replace")
-// df_follows.to_csv("neo4j-import/follows.csv", index=False)
+// df_follow = get_table(Session, Follow)
+// df_follow.to_csv("neo4j-import/follows.csv")
 
 // echo ':source import_follows.cql' | cypher-shell -u neo4j -p neo4j
 
-// CREATE CONSTRAINT unique_user_pubkey ON (n:User) ASSERT n.pubkey IS UNIQUE;
+CREATE CONSTRAINT unique_user_pubkey
+IF NOT EXISTS
+ON (n:User)
+ASSERT n.pubkey IS UNIQUE;
+
+CREATE CONSTRAINT unique_event_id
+IF NOT EXISTS
+ON (e:Event)
+ASSERT e.id IS UNIQUE;
 
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///follows.csv' AS row
 MERGE (follower:User {pubkey: row.pubkey})
-MERGE (followed:User {pubkey: row.follows})
+MERGE (followed:User {pubkey: row.p})
+MERGE (e:Event {id: row.id})
+SET e.createdAt = toInteger(row.created_at)
+MERGE (follower)-[:CREATES]->(e)
+MERGE (e)-[:TARGETS]->(followed)
 MERGE (follower)-[r:FOLLOWS]->(followed)
-ON CREATE SET r.createdAt = row.created_at;
 
+// add MERGE (follower)-[r:FOLLOWS_VIA]->(e) ?
 // TODO: check created_at to see if need to update relationship

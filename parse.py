@@ -58,7 +58,7 @@ def parse_reply_tags(df):
     df_reply = pd.DataFrame(
         e_rows,
         columns=["id", "pubkey", "ref_id", "created_at", "kind", "relay_url", "marker"],
-    )  # .set_index(["id", "ref_id"])
+    ).set_index("id")
     return df_reply
 
 
@@ -117,7 +117,7 @@ def parse_mention_tags(df):
             "relay_url",
             "petname",
         ],
-    )
+    ).set_index("id")
     return df_mention
 
 
@@ -162,12 +162,14 @@ def parse_mention_row(row):
 
 
 def parse_follows(df):
-    df_follows = parse_tags(df[df["kind"] == 3], filter_tag="p")
+    df_follows = parse_tags(df[df["kind"] == 3], filter_tag="p").set_index(
+        ["pubkey", "p"]
+    )
     return df_follows
 
 
 def parse_reactions(df):
     df_reactions = parse_tags(
         df[df["kind"] == 7], filter_tag=["e", "p"], keep_col="content", keep_last=True
-    )
+    ).set_index("id")
     return df_reactions
