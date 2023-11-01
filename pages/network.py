@@ -20,28 +20,95 @@ password = os.getenv("NEO4J_PASSWORD")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 
-def get_top_followed_pubkeys(tx):
-    query = """
+def get_top_followed_pubkeys(tx, num_users=5):
+    query = f"""
         MATCH (follower:User)-[:FOLLOWS]->(followed:User)
         RETURN followed.pubkey AS pubkey, COUNT(follower) AS followers_count
         ORDER BY followers_count DESC
-        LIMIT 10
+        LIMIT {num_users}
     """
     return tx.run(query).data()
 
 
-def layout():
+def get_most_targeted_user(tx, num_users=5):
+    query = f"""
+        MATCH (targetedUser:User)<-[:TARGETS]-()
+        RETURN targetedUser.pubkey AS pubkey, COUNT(*) AS times_targeted
+        ORDER BY times_targeted DESC
+        LIMIT {num_users}
+    """
+    return tx.run(query).data()
+
+
+def layout(num_followed=5, num_targeted=5):
     with driver.session() as session:
-        result = session.read_transaction(get_top_followed_pubkeys)
+        result_followed = session.read_transaction(
+            get_top_followed_pubkeys, num_followed
+        )
+        result_targeted = session.read_transaction(get_most_targeted_user, num_targeted)
 
-    df = pd.DataFrame(result)
-    df["pubkey"] = df["pubkey"].apply(lambda x: PublicKey.from_hex(x).to_bech32())
+    df_followed = pd.DataFrame(result_followed)
+    df_followed["pubkey"] = df_followed["pubkey"].apply(
+        lambda x: PublicKey.from_hex(x).to_bech32()
+    )
 
-    table_data = [html.Tr([html.Th(col) for col in df.columns])] + [
-        html.Tr([html.Td(df.iloc[i][col]) for col in df.columns])
-        for i in range(len(df))
+    df_targeted = pd.DataFrame(result_targeted)
+    df_targeted["pubkey"] = df_targeted["pubkey"].apply(
+        lambda x: PublicKey.from_hex(x).to_bech32()
+    )
+
+    # table_followed_data = [html.Tr([html.Th(col) for col in df_followed.columns])] + [
+    #     html.Tr([html.Td(df_followed.iloc[i][col]) for col in df_followed.columns])
+    #     for i in range(len(df_followed))
+    # ]
+
+    # table_targeted_data = [html.Tr([html.Th(col) for col in df_targeted.columns])] + [
+    #     html.Tr([html.Td(df_targeted.iloc[i][col]) for col in df_targeted.columns])
+    #     for i in range(len(df_targeted))
+    # ]
+
+    table_followed_data = [html.Tr([html.Th(col) for col in df_followed.columns])] + [
+        html.Tr(
+            [
+                html.Td(
+                    html.A(
+                        df_followed.iloc[i]["pubkey"],
+                        href=f"http://njump.me/{df_followed.iloc[i]['pubkey']}",
+                    )
+                )
+                if col == "pubkey"
+                else html.Td(df_followed.iloc[i][col])
+                for col in df_followed.columns
+            ]
+        )
+        for i in range(len(df_followed))
     ]
 
-    layout = html.Div([html.H3("Top 10 Most Followed Pubkeys"), html.Table(table_data)])
+    table_targeted_data = [html.Tr([html.Th(col) for col in df_targeted.columns])] + [
+        html.Tr(
+            [
+                html.Td(
+                    html.A(
+                        df_targeted.iloc[i]["pubkey"],
+                        href=f"http://njump.me/{df_targeted.iloc[i]['pubkey']}",
+                    )
+                )
+                if col == "pubkey"
+                else html.Td(df_targeted.iloc[i][col])
+                for col in df_targeted.columns
+            ]
+        )
+        for i in range(len(df_targeted))
+    ]
+
+    layout = html.Div(
+        [
+            html.H3(f"Top {num_followed} Most Followed Pubkeys"),
+            html.Table(table_followed_data),
+            html.Hr(),  # Horizontal line to separate the sections
+            html.H3(f"Top {num_targeted} Most Targeted Users"),
+            html.Table(table_targeted_data),
+        ]
+    )
 
     return layout

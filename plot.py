@@ -20,7 +20,6 @@ def plot_histogram(df, groupby_cols=None, title=""):
         groupby_cols = [groupby_cols]
 
     df_grp = df.groupby(groupby_cols).size().reset_index(name="count")
-    print(df_grp)
 
     if len(groupby_cols) == 1:
         fig = px.histogram(df_grp, x=groupby_cols[0], y="count", title=title)

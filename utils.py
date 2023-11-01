@@ -69,6 +69,10 @@ def get_hex(npub):
     return PublicKey.from_bech32(npub).to_hex()
 
 
+def get_event_bech(event_hex):
+    return EventId.from_hex(event_hex).to_bech32()
+
+
 def postprocess(df, dedupe: bool = True):
     if "kind" in df.columns:
         df["kind_name"] = df["kind"].map(kind_name_dict)

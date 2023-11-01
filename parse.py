@@ -162,8 +162,10 @@ def parse_mention_row(row):
 
 
 def parse_follows(df):
-    df_follows = parse_tags(df[df["kind"] == 3], filter_tag="p").set_index(
-        ["pubkey", "p"]
+    df_follows = (
+        parse_tags(df[df["kind"] == 3], filter_tag="p")
+        .dropna(subset=["p"])
+        .set_index(["pubkey", "p"])
     )
     return df_follows
 
