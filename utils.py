@@ -65,7 +65,7 @@ def get_npub(pubkey):
     return PublicKey.from_hex(pubkey).to_bech32()
 
 
-def get_hex(npub):
+def get_pubkey_hex(npub):
     return PublicKey.from_bech32(npub).to_hex()
 
 

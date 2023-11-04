@@ -21,13 +21,13 @@ driver = GraphDatabase.driver(uri, auth=(username, password))
 
 
 def get_top_followed_pubkeys(tx, num_users=5):
-    query = f"""
+    query = """
         MATCH (follower:User)-[:FOLLOWS]->(followed:User)
         RETURN followed.pubkey AS pubkey, COUNT(follower) AS followers_count
         ORDER BY followers_count DESC
-        LIMIT {num_users}
+        LIMIT $num_users
     """
-    return tx.run(query).data()
+    return tx.run(query, num_users=num_users).data()
 
 
 def get_most_targeted_user(tx, num_users=5):
@@ -56,16 +56,6 @@ def layout(num_followed=5, num_targeted=5):
     df_targeted["pubkey"] = df_targeted["pubkey"].apply(
         lambda x: PublicKey.from_hex(x).to_bech32()
     )
-
-    # table_followed_data = [html.Tr([html.Th(col) for col in df_followed.columns])] + [
-    #     html.Tr([html.Td(df_followed.iloc[i][col]) for col in df_followed.columns])
-    #     for i in range(len(df_followed))
-    # ]
-
-    # table_targeted_data = [html.Tr([html.Th(col) for col in df_targeted.columns])] + [
-    #     html.Tr([html.Td(df_targeted.iloc[i][col]) for col in df_targeted.columns])
-    #     for i in range(len(df_targeted))
-    # ]
 
     table_followed_data = [html.Tr([html.Th(col) for col in df_followed.columns])] + [
         html.Tr(
