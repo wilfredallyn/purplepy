@@ -39,8 +39,6 @@ def query_relay(
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
     df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
     df = postprocess(df)
-    # df_reply = parse_reply_tags(df)
-    # df_mention = parse_mention_tags(df)
     return df
 
 

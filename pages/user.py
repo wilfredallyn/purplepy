@@ -95,6 +95,7 @@ def layout(npub=None, num_fans=5):
     Input("plot-type-checklist", "value"),
     Input("submit-npub-button", "n_clicks"),
     State("input-npub", "value"),
+    prevent_initial_call=True,
 )
 def update_graph(
     groupby_cols, n_clicks, input_npub, num_fans=5
