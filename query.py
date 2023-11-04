@@ -7,20 +7,6 @@ from sqlalchemy import func
 from utils import postprocess
 
 
-def init_client():
-    keys = Keys.generate()
-    opts = Options().timeout(timedelta(seconds=1000))
-    client = Client.with_opts(keys, opts)
-    client.add_relay("wss://relay.damus.io")
-    client.add_relay("wss://nostr.oxtr.dev")
-    client.add_relay("wss://relay.nostr.band")
-    client.add_relay("wss://relay.primal.net")
-    client.add_relay("wss://relay.mostr.pub")
-    client.connect()
-    # return None if can't connect
-    return client
-
-
 def query_relay(
     client, npub=None, kind=None, num_days=None, num_limit=None, timeout_secs=30
 ):

@@ -4,7 +4,7 @@ from dash import callback, dcc, html, dash_table
 from dash.dependencies import Input, Output, State
 from db import get_sql_engine
 from dotenv import load_dotenv
-from neo4j import GraphDatabase
+from db import neo4j_driver, Session
 import os
 from plot import plot_histogram
 import plotly.express as px
@@ -20,15 +20,7 @@ dash.register_page(__name__, path="/user", name="User")
 # dash.register_page(__name__, path_template="/user/<npub>")
 
 
-engine = get_sql_engine()
-Session = sessionmaker(bind=engine)
 will_npub = "npub1xtscya34g58tk0z605fvr788k263gsu6cy9x0mhnm87echrgufzsevkk5s"
-
-uri = os.getenv("NEO4J_URI")  # bolt://localhost:7687
-username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD")
-
-driver = GraphDatabase.driver(uri, auth=(username, password))
 
 
 def get_biggest_fans(tx, npub, num_fans=5):
@@ -121,7 +113,7 @@ def update_graph(
         df, groupby_cols=groupby_cols, title=f"Histogram of events for {npub}"
     )
 
-    with driver.session() as session:
+    with neo4j_driver.session() as session:
         results = session.read_transaction(get_biggest_fans, npub, num_fans)
 
     table_data = [
