@@ -17,7 +17,7 @@ from utils import postprocess
 import uuid
 
 
-def get_sql_engine(sqlite_path="localdb.sqlite"):
+def get_sql_engine():
     try:
         postgres_uri = os.getenv(
             "POSTGRES_URI"
@@ -28,8 +28,7 @@ def get_sql_engine(sqlite_path="localdb.sqlite"):
         print("Using postgres for local db")
         return engine
     except exc.OperationalError:
-        print(f"Using sqlite for local db (path = {sqlite_path})")
-        return create_engine(f"sqlite:///{sqlite_path}")
+        raise ConnectionError(f"Cannot connect to PostgreSQL database")
 
 
 def get_neo4j_driver():

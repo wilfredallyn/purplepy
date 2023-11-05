@@ -134,7 +134,7 @@
         export NEO4J_CONF=$NEO4J_CONF_DIR
         neo4j-admin set-initial-password neo4j
 
-        echo "To start PostgreSQL: pg_ctl start -o \"-c listen_addresses=\'\'"
+        echo "To start PostgreSQL: pg_ctl start"
         echo "To start Neo4j: neo4j start"
       '';
     };
