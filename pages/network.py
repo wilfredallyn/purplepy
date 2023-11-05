@@ -1,13 +1,9 @@
 import dash
 from dash import html
-from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from nostr_sdk import PublicKey
 import os
 import pandas as pd
-
-
-load_dotenv()
 
 
 dash.register_page(__name__, path_template="/network", name="Network")

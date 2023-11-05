@@ -3,7 +3,6 @@ import dash
 from dash import callback, dcc, html, dash_table
 from dash.dependencies import Input, Output, State
 from db import get_sql_engine
-from dotenv import load_dotenv
 from db import neo4j_driver, Session
 import os
 from plot import plot_histogram
@@ -13,14 +12,8 @@ from sqlalchemy.orm import sessionmaker
 from utils import get_pubkey_hex, get_npub
 
 
-load_dotenv()
-
-
 dash.register_page(__name__, path="/user", name="User")
 # dash.register_page(__name__, path_template="/user/<npub>")
-
-
-will_npub = "npub1xtscya34g58tk0z605fvr788k263gsu6cy9x0mhnm87echrgufzsevkk5s"
 
 
 def get_biggest_fans(tx, npub, num_fans=5):

@@ -2,10 +2,12 @@ from client import init_client
 import dash
 from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
+from db import sql_engine, write_tables
 from query import query_relay
 
 
 dash.register_page(__name__, name="Query Relays")
+
 
 client = init_client()
 
@@ -90,7 +92,11 @@ def layout():
                 ],
                 className="mb-3",
             ),
-            html.Div(id="query-output"),
+            dcc.Loading(
+                id="loading-1",
+                type="default",
+                children=html.Div(id="query-output"),
+            ),
         ],
         fluid=True,
         style={"padding": "20px"},
@@ -110,14 +116,16 @@ def layout():
     prevent_initial_call=True,
 )
 def update_output(n_clicks, npub, kind, num_days, num_limit, timeout_secs):
-    # output_data = f"npub={npub}, kind={kind}, num_days={num_days}, num_limit={num_limit}, timeout_secs={timeout_secs}"
+    if kind is not None:
+        kind = int(kind)
     df = query_relay(
         client=client,
         npub=npub,
-        kind=int(kind),
+        kind=kind,
         num_days=num_days,
         num_limit=num_limit,
         timeout_secs=timeout_secs,
     )
     output_data = f"downloaded {len(df)} events"
+    write_tables(df, sql_engine)
     return output_data

@@ -128,10 +128,11 @@ def format_data_table(df):
         "created_at",
         "pubkey",
         "kind",
-        "kind_name",
         "content",
         "reply_count",
     ]
+    if "kind_name" in df.columns:
+        cols.append("kind_name")
 
     table_data = df[cols].to_dict("records")
 

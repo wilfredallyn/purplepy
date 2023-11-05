@@ -3,7 +3,8 @@ import pandas as pd
 
 
 def parse_user_metadata(df):
-    df_metadata = df[df.kind == 0].copy().reset_index(drop=True)
+    # df_metadata.columns from postprocess: ['id', 'content', 'created_at', 'kind', 'pubkey', 'sig', 'tags', 'kind_name']
+    df_metadata = df[df.kind == 0].copy().reset_index(drop=False)
     df_content = (
         df_metadata["content"]
         .apply(json.loads)
@@ -14,7 +15,7 @@ def parse_user_metadata(df):
     df_user = (
         pd.concat(
             [
-                df_metadata["pubkey"],
+                df_metadata[["id", "pubkey", "created_at", "tags"]],
                 df_content,
             ],
             axis=1,

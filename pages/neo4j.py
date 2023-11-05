@@ -23,6 +23,7 @@ MATCH (u:User)-[r:FOLLOWS]->(other:User)
 WITH u, COUNT(r) AS followsCount
 ORDER BY followsCount DESC
 LIMIT 1
+RETURN u, followsCount
 
 // Return the network graph for that user
 MATCH (u)-[rel:FOLLOWS]->(followed:User)

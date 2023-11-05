@@ -19,7 +19,10 @@ class Event(Base):
 
 class User(Base):
     __tablename__ = "user"
+    id = Column(String)
+    created_at = Column(BigInteger)
     pubkey = Column(String, primary_key=True)
+    tags = Column(JSONB)
     name = Column(String)
     about = Column(String)
     website = Column(String)
@@ -27,7 +30,6 @@ class User(Base):
     lud16 = Column(String)
     picture = Column(String)
     banner = Column(String)
-    created_at = Column(BigInteger)
 
 
 class Follow(Base):

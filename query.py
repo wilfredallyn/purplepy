@@ -8,7 +8,12 @@ from utils import postprocess
 
 
 def query_relay(
-    client, npub=None, kind=None, num_days=None, num_limit=None, timeout_secs=30
+    client,
+    npub=None,
+    kind=None,
+    num_days=None,
+    num_limit=None,
+    timeout_secs=30,
 ):
     filter = Filter()
     if kind:
@@ -24,7 +29,6 @@ def query_relay(
         filter = filter.limit(num_limit)
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
     df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
-    df = postprocess(df)
     return df
 
 

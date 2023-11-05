@@ -1,6 +1,10 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
