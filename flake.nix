@@ -85,16 +85,23 @@
       
       shellHook = ''
         PG_RUN_DIR="$PWD/pgsql-run"
+        export PGDATA="$PWD/pgsql"
+
         if [ ! -d "$PG_RUN_DIR" ]; then
           mkdir -p $PG_RUN_DIR
-          chown $(whoami) $PG_RUN_DIR
         fi
-        if [ ! -d "pgsql" ]; then
-          mkdir pgsql
-          initdb -D pgsql --no-locale --encoding=UTF8
-          createdb $(whoami)
+
+        if [ ! -d "$PGDATA" ]; then
+          initdb --no-locale --encoding=UTF8
+          createdb "$(whoami)"
           psql -c "CREATE ROLE postgres WITH SUPERUSER LOGIN;"
         fi
+
+        echo "unix_socket_directories = '$PG_RUN_DIR'" > "$PGDATA/postgresql.conf"
+        echo "listen_addresses = 'localhost'" >> "$PGDATA/postgresql.conf"
+        echo "port = 5432" >> "$PGDATA/postgresql.conf"
+
+
         # start pgsql
         # if ! pg_ctl status -D pgsql &>/dev/null; then
         #   pg_ctl start -D pgsql
@@ -127,8 +134,8 @@
         export NEO4J_CONF=$NEO4J_CONF_DIR
         neo4j-admin set-initial-password neo4j
 
-        echo "type 'pg_ctl start -D pgsql' to start postgres"
-        echo "type 'neo4j start' to start neo4j"
+        echo "To start PostgreSQL: pg_ctl start -o \"-c listen_addresses=\'\'"
+        echo "To start Neo4j: neo4j start"
       '';
     };
   });
