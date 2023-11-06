@@ -15,5 +15,6 @@ def init_client():
     client.add_relay("wss://relay.nostr.band")
     client.add_relay("wss://relay.primal.net")
     client.add_relay("wss://relay.mostr.pub")
+    client.add_relay("wss://relay.nostr.band")
     client.connect()
     return client

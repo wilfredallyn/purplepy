@@ -44,12 +44,21 @@ def layout(num_followed=5, num_targeted=5):
         result_targeted = session.read_transaction(get_most_targeted_user, num_targeted)
 
     df_followed = pd.DataFrame(result_followed)
+    df_targeted = pd.DataFrame(result_targeted)
+
+    if len(df_followed) == 0 or len(df_targeted) == 0:
+        layout = html.Div(
+            [
+                html.P(f"Import data into Neo4j to analyze network"),
+            ]
+        )
+        return layout
+
     if len(df_followed) > 0:
         df_followed["pubkey"] = df_followed["pubkey"].apply(
             lambda x: PublicKey.from_hex(x).to_bech32()
         )
 
-    df_targeted = pd.DataFrame(result_targeted)
     if len(df_targeted) > 0:
         df_targeted["pubkey"] = df_targeted["pubkey"].apply(
             lambda x: PublicKey.from_hex(x).to_bech32()

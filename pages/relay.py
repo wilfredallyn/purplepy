@@ -126,6 +126,10 @@ def update_output(n_clicks, npub, kind, num_days, num_limit, timeout_secs):
         num_limit=num_limit,
         timeout_secs=timeout_secs,
     )
-    output_data = f"downloaded {len(df)} events"
     write_tables(df, sql_engine)
-    return output_data
+    output_data = f"downloaded {len(df)} events, loaded into postgres and neo4j"
+    return [
+        output_data,
+        html.Br(),
+        html.A("Open Neo4j Browser", href="http://localhost:7474/", target="_blank"),
+    ]

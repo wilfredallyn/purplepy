@@ -6,11 +6,7 @@ def parse_user_metadata(df):
     # df_metadata.columns from postprocess: ['id', 'content', 'created_at', 'kind', 'pubkey', 'sig', 'tags', 'kind_name']
     df_metadata = df[df.kind == 0].copy().reset_index(drop=False)
     df_content = (
-        df_metadata["content"]
-        .apply(json.loads)
-        .apply(pd.Series)
-        .reset_index(drop=True)
-        .drop("pubkey", axis=1)
+        df_metadata["content"].apply(json.loads).apply(pd.Series).reset_index(drop=True)
     )
     df_user = (
         pd.concat(

@@ -1,10 +1,5 @@
 from neo4j import GraphDatabase
 import os
-from sqlalchemy import create_engine, exc, inspect, MetaData, select, Table
-from sqlalchemy.dialects.postgresql import insert as pg_insert, JSONB
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.schema import UniqueConstraint
-from sqla_models import User
 import pandas as pd
 from parse import (
     parse_follows,
@@ -13,6 +8,12 @@ from parse import (
     parse_reply_tags,
     parse_user_metadata,
 )
+from sqlalchemy import create_engine, exc, inspect, MetaData, select, Table
+from sqlalchemy.dialects.postgresql import insert as pg_insert, JSONB
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.schema import UniqueConstraint
+from sqla_models import User
+import subprocess
 from utils import postprocess
 import uuid
 
@@ -71,9 +72,27 @@ def write_tables(df, engine):
 
     df_user = parse_user_metadata(df.copy())
     user_cols = [col.name for col in inspect(User).columns]
-    user_cols = [col for col in user_cols if col != "pubkey"]
+    user_cols = [col for col in user_cols if col in df_user.columns]
     df_user[user_cols].to_sql("user", engine, if_exists="append")
     df_user.to_csv("neo4j-import/users.csv")
+
+    # add replys after add ref_pubkey
+    # for kind_name in ["follows", "mentions", "reactions", "replys", "users"]:
+    for kind_name in ["follows", "mentions", "reactions", "users"]:
+        load_neo4j_data(kind_name)
+
+
+def load_neo4j_data(kind_name: str):
+    expected_kinds = ["follows", "mentions", "reactions", "replys", "users"]
+    if kind_name not in expected_kinds:
+        raise ValueError(f"kind_name must be in {expected_kinds}")
+    command = f"echo ':source import_{kind_name}.cql' | cypher-shell -u neo4j -p neo4j"
+    result = subprocess.run(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+
+    if result.returncode != 0:
+        print("Error executing command:", result.stderr)
 
 
 def upsert_df(df: pd.DataFrame, table_name: str, engine):
