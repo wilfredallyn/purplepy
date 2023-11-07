@@ -2,7 +2,6 @@ from analyze import get_events_by_time
 import dash
 from dash import callback, dcc, html, dash_table
 from dash.dependencies import Input, Output, State
-from db import get_sql_engine
 from db import neo4j_driver, Session
 import os
 from plot import plot_histogram

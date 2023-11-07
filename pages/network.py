@@ -1,19 +1,11 @@
 import dash
 from dash import html
-from neo4j import GraphDatabase
+from db import neo4j_driver
 from nostr_sdk import PublicKey
-import os
 import pandas as pd
 
 
 dash.register_page(__name__, path_template="/network", name="Network")
-
-
-uri = os.getenv("NEO4J_URI")  # bolt://localhost:7687
-username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD")
-
-driver = GraphDatabase.driver(uri, auth=(username, password))
 
 
 def get_top_followed_pubkeys(tx, num_users=5):
@@ -36,8 +28,12 @@ def get_most_targeted_user(tx, num_users=5):
     return tx.run(query).data()
 
 
+def get_most_active_users(tx, num_users=5):
+    pass
+
+
 def layout(num_followed=5, num_targeted=5):
-    with driver.session() as session:
+    with neo4j_driver.session() as session:
         result_followed = session.read_transaction(
             get_top_followed_pubkeys, num_followed
         )

@@ -95,55 +95,9 @@ def load_neo4j_data(kind_name: str):
         print("Error executing command:", result.stderr)
 
 
-def upsert_df(df: pd.DataFrame, table_name: str, engine):
-    pass
-
-
-# TODO: debug upsert
-
-# meta = MetaData(bind=engine)
-# meta.reflect()
-# table = Table(table_name, meta, autoload_with=engine)
-
-# # Check if table exists
-# if table_name not in meta.tables:
-#     df.to_sql(table_name, engine)
-#     return True
-
-# # If it already exists...
-# temp_table_name = f"temp_{uuid.uuid4().hex[:6]}"
-# df.to_sql(temp_table_name, engine, index=True)
-
-# temp_table = Table(temp_table_name, meta, autoload_with=engine)
-
-# # Prepare the insert statement
-# insert_stmt = pg_insert(table).from_select(
-#     names=[c.name for c in temp_table.c], select=select([temp_table])
-# )
-
-# # Prepare the upsert (on conflict do update)
-# pk_columns = [table.c[name] for name in df.index.names]
-# do_update_stmt = insert_stmt.on_conflict_do_update(
-#     index_elements=pk_columns,
-#     set_={
-#         c.name: insert_stmt.excluded[c.name] for c in table.c if c not in pk_columns
-#     },
-# )
-
-# with engine.begin() as conn:
-#     # Add unique constraint to pk columns if not exist
-#     constraint_name = f"{table_name}_unique_constraint_for_upsert"
-#     if not engine.dialect.has_table(engine, table_name):
-#         conn.execute(
-#             table.append_constraint(
-#                 UniqueConstraint(*pk_columns, name=constraint_name)
-#             )
-#         )
-
-#     conn.execute(do_update_stmt)
-#     conn.execute(temp_table.drop())
-
-# return True
+# TODO: add upsert
+# def upsert_df(df: pd.DataFrame, table_name: str, engine):
+# pass
 
 
 sql_engine = get_sql_engine()
