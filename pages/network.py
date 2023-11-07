@@ -29,20 +29,47 @@ def get_most_targeted_user(tx, num_users=5):
 
 
 def get_most_active_users(tx, num_users=5):
-    pass
+    query = f"""
+        MATCH (user:User)-[:CREATES]->(event:Event)
+        RETURN user.pubkey AS pubkey, count(event) AS events_created
+        ORDER BY events_created DESC
+        LIMIT {num_users}
+    """
+    return tx.run(query).data()
 
 
-def layout(num_followed=5, num_targeted=5):
-    with neo4j_driver.session() as session:
-        result_followed = session.read_transaction(
-            get_top_followed_pubkeys, num_followed
+def format_html_results(df):
+    df["pubkey"] = df["pubkey"].apply(lambda x: PublicKey.from_hex(x).to_bech32())
+    table_data = [html.Tr([html.Th(col) for col in df.columns])] + [
+        html.Tr(
+            [
+                html.Td(
+                    html.A(
+                        df.iloc[i]["pubkey"],
+                        href=f"http://njump.me/{df.iloc[i]['pubkey']}",
+                    )
+                )
+                if col == "pubkey"
+                else html.Td(df.iloc[i][col])
+                for col in df.columns
+            ]
         )
-        result_targeted = session.read_transaction(get_most_targeted_user, num_targeted)
+        for i in range(len(df))
+    ]
+    return table_data
+
+
+def layout(num_users=5):
+    with neo4j_driver.session() as session:
+        result_followed = session.read_transaction(get_top_followed_pubkeys, num_users)
+        result_targeted = session.read_transaction(get_most_targeted_user, num_users)
+        result_active = session.read_transaction(get_most_active_users, num_users)
 
     df_followed = pd.DataFrame(result_followed)
     df_targeted = pd.DataFrame(result_targeted)
+    df_active = pd.DataFrame(result_active)
 
-    if len(df_followed) == 0 or len(df_targeted) == 0:
+    if len(df_followed) == 0 or len(df_targeted) == 0 or len(df_active) == 0:
         layout = html.Div(
             [
                 html.P(f"Import data into Neo4j to analyze network"),
@@ -50,58 +77,15 @@ def layout(num_followed=5, num_targeted=5):
         )
         return layout
 
-    if len(df_followed) > 0:
-        df_followed["pubkey"] = df_followed["pubkey"].apply(
-            lambda x: PublicKey.from_hex(x).to_bech32()
-        )
-
-    if len(df_targeted) > 0:
-        df_targeted["pubkey"] = df_targeted["pubkey"].apply(
-            lambda x: PublicKey.from_hex(x).to_bech32()
-        )
-
-    table_followed_data = [html.Tr([html.Th(col) for col in df_followed.columns])] + [
-        html.Tr(
-            [
-                html.Td(
-                    html.A(
-                        df_followed.iloc[i]["pubkey"],
-                        href=f"http://njump.me/{df_followed.iloc[i]['pubkey']}",
-                    )
-                )
-                if col == "pubkey"
-                else html.Td(df_followed.iloc[i][col])
-                for col in df_followed.columns
-            ]
-        )
-        for i in range(len(df_followed))
-    ]
-
-    table_targeted_data = [html.Tr([html.Th(col) for col in df_targeted.columns])] + [
-        html.Tr(
-            [
-                html.Td(
-                    html.A(
-                        df_targeted.iloc[i]["pubkey"],
-                        href=f"http://njump.me/{df_targeted.iloc[i]['pubkey']}",
-                    )
-                )
-                if col == "pubkey"
-                else html.Td(df_targeted.iloc[i][col])
-                for col in df_targeted.columns
-            ]
-        )
-        for i in range(len(df_targeted))
-    ]
-
     layout = html.Div(
         [
-            html.H3(f"Top {num_followed} Most Followed Pubkeys"),
-            html.Table(table_followed_data),
+            html.H3(f"Top {num_users} Most Followed Pubkeys"),
+            html.Table(format_html_results(df_followed)),
             html.Hr(),  # Horizontal line to separate the sections
-            html.H3(f"Top {num_targeted} Most Targeted Users"),
-            html.Table(table_targeted_data),
+            html.H3(f"Top {num_users} Most Targeted Users"),
+            html.Table(format_html_results(df_targeted)),
+            html.H3(f"Top {num_users} Most Active Users"),
+            html.Table(format_html_results(df_active)),
         ]
     )
-
     return layout

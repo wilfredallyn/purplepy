@@ -1,150 +1,46 @@
 import dash
-from dash import dash_table, dcc, html
-from dash.dependencies import Input, Output, State
-from db import get_sql_engine
-import numpy as np
-import plotly.express as px
-import pandas as pd
-from query import init_client, query_db, query_events
-from sqlalchemy.orm import sessionmaker
-from utils import format_data_table, kind_name_dict
+from dash import html, dcc
+import dash_bootstrap_components as dbc
+from dotenv import load_dotenv
 
 
-# for querying network
-# client = init_client()
-client = None
-
-# for querying local db
-engine = get_sql_engine()
-Session = sessionmaker(bind=engine)
-# Base = declarative_base()
+load_dotenv()
 
 
-app = dash.Dash(__name__)
-# app = dash.Dash(__name__, use_pages=True)
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
 
-app.layout = html.Div(
+
+sidebar = dbc.Nav(
     [
-        dcc.Input(id="npub", type="text", placeholder="Enter npub value"),
-        dcc.Input(id="kind", type="text", placeholder="Enter kind value (Optional)"),
-        dcc.Input(
-            id="num_days",
-            type="number",
-            placeholder="Enter num_days value (Default: 1)",
-        ),
-        html.Button("Submit", id="submit-btn", n_clicks=0),
-        dcc.RadioItems(
-            id="toggle-btn",
-            options=[
-                {"label": "Query Network", "value": "network"},
-                {"label": "Local DB", "value": "local"},
-            ],
-            value="network",
-            labelStyle={"display": "inline-block"},
-        ),
-        dcc.Loading(
-            id="loading",
-            type="default",
-            children=[
-                dcc.Graph(id="graph-output"),
-                html.Div(id="message-output"),
-                dash_table.DataTable(
-                    id="table-output",
-                    style_data_conditional=[
-                        {"if": {"column_id": "id"}, "width": "100px"},
-                        {"if": {"column_id": "created_at"}, "width": "150px"},
-                        {"if": {"column_id": "pubkey"}, "width": "150px"},
-                        {
-                            "if": {"column_id": "content"},
-                            "width": "150px",
-                            "overflow": "hidden",
-                            "textOverflow": "ellipsis",
-                            "whiteSpace": "normal",
-                        },
-                    ],
-                    page_size=25,
-                ),
-            ],
-        ),
-        # html.Div(
-        #     [
-        #         html.Div(
-        #             dcc.Link(
-        #                 f"{page['name']} - {page['path']}", href=page["relative_path"]
-        #             )
-        #         )
-        #         for page in dash.page_registry.values()
-        #     ]
-        # ),
-        # dash.page_container,
-    ]
+        dbc.NavLink(
+            html.Div(page["name"], className="ms-2"), href=page["path"], active="exact"
+        )
+        for page in dash.page_registry.values()
+    ],
+    vertical=True,
+    pills=True,
+    className="bg-light",
 )
 
-
-@app.callback(
+app.layout = dbc.Container(
     [
-        Output("graph-output", "figure"),
-        Output("message-output", "children"),
-        Output("table-output", "data"),
-        Output("table-output", "columns"),
-        Output("table-output", "tooltip_data"),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div("purple-py", style={"fontSize": 50, "textAlign": "center"})
+                )
+            ]
+        ),
+        html.Hr(),
+        dbc.Row(
+            [
+                dbc.Col([sidebar], xs=4, sm=4, md=2, lg=2, xl=2, xxl=2),
+                dbc.Col([dash.page_container], xs=8, sm=8, md=10, lg=10, xl=10, xxl=10),
+            ]
+        ),
     ],
-    [
-        Input("submit-btn", "n_clicks"),
-    ],
-    [
-        State("npub", "value"),
-        State("kind", "value"),
-        State("num_days", "value"),
-        State("toggle-btn", "value"),
-    ],
+    fluid=True,
 )
-def update_graph(n_clicks, npub, kind_value, num_days, toggle_value):
-    num_days = int(num_days) if num_days else 1
-    df = pd.DataFrame()
-    if toggle_value == "network" and client:
-        df = query_events(
-            client=client,
-            kind=kind_value,
-            npub=npub,
-            num_days=num_days,
-            num_limit=None,
-            timeout_secs=30,
-        )
-    elif toggle_value == "local":
-        df = query_db(
-            Session=Session,
-            npub=npub,
-            kind=kind_value,
-        )
-
-    if df.empty:
-        return (
-            px.scatter(template=None),
-            "No data found for the given fields",
-            None,
-            None,
-            None,
-        )
-
-    x_order = np.sort(df["kind"].unique())
-    fig = px.histogram(
-        x=df.kind.astype(str),
-        title=f"Histogram of events by kind for {npub}",
-        category_orders={"kind": x_order},
-    )
-    x_labels = [f"{x} ({kind_name_dict[x]})" for x in x_order if x in kind_name_dict]
-
-    fig.update_xaxes(tickvals=x_order, ticktext=x_labels)
-
-    table_data, table_columns, tooltip_data = format_data_table(df)
-    return fig, "Submit button clicked!", table_data, table_columns, tooltip_data
-
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
-
-
-# stacked histogram of kind distribution (df has multiple npubs)
-# df.kind = df.kind.astype(str)
-# px.histogram(df, x="pubkey", color="kind")
+    app.run_server(debug=False)

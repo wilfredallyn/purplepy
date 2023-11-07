@@ -1,7 +1,4 @@
-// df_mentions = get_table(Session, Mention)
-// df_mentions.to_csv("neo4j-import/mentions.csv")
-
-// echo ':source import_mentions.cql' | cypher-shell -u neo4j -p neo4j
+// echo ':source neo4j-import/import_mentions.cql' | cypher-shell -u neo4j -p neo4j
 
 CREATE CONSTRAINT unique_user_pubkey
 IF NOT EXISTS

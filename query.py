@@ -28,7 +28,15 @@ def query_relay(
     if num_limit:
         filter = filter.limit(num_limit)
     events = client.get_events_of([filter], timedelta(seconds=timeout_secs))
-    df = pd.DataFrame([json.loads(event.as_json()) for event in events]).set_index("id")
+
+    events_with_id = [
+        json.loads(event.as_json())
+        for event in events
+        if "id" in json.loads(event.as_json())
+    ]
+    df = pd.DataFrame(events_with_id)
+    if not df.empty:
+        df = df.set_index("id")
     return df
 
 

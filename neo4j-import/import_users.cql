@@ -1,4 +1,4 @@
-// echo ':source import_users.cql' | cypher-shell -u neo4j -p neo4j
+// echo ':source neo4j-import/import_users.cql' | cypher-shell -u neo4j -p neo4j
 
 CREATE CONSTRAINT unique_user_pubkey
 IF NOT EXISTS

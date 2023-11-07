@@ -86,7 +86,7 @@ def load_neo4j_data(kind_name: str):
     expected_kinds = ["follows", "mentions", "reactions", "replys", "users"]
     if kind_name not in expected_kinds:
         raise ValueError(f"kind_name must be in {expected_kinds}")
-    command = f"echo ':source import_{kind_name}.cql' | cypher-shell -u neo4j -p neo4j"
+    command = f"echo ':source neo4j-import/import_{kind_name}.cql' | cypher-shell -u neo4j -p neo4j"
     result = subprocess.run(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )

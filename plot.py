@@ -1,16 +1,5 @@
 import numpy as np
 import plotly.express as px
-from utils import kind_name_dict
-
-
-def plot_histogram(df, groupby_cols=None, title=""):
-    df_grp = df.groupby(groupby_cols).size().reset_index(name="count")
-    fig = px.histogram(
-        x=df_grp,
-        y="count",
-        title=title,
-    )
-    return fig
 
 
 def plot_histogram(df, groupby_cols=None, title=""):

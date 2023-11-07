@@ -1,7 +1,4 @@
-// df_replys = get_table(Session, Reply)
-// df_replys.to_csv("neo4j-import/replys.csv")
-
-// echo ':source import_replys.cql' | cypher-shell -u neo4j -p neo4j
+// echo ':source neo4j-import/import_replys.cql' | cypher-shell -u neo4j -p neo4j
 
 CREATE CONSTRAINT unique_user_pubkey
 IF NOT EXISTS

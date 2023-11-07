@@ -1,7 +1,4 @@
-// df_reaction = get_table(Session, Reaction)
-// df_reaction.to_csv("neo4j-import/reactions.csv")
-
-// echo ':source import_reactions.cql' | cypher-shell -u neo4j -p neo4j
+// echo ':source neo4j-import/import_reactions.cql' | cypher-shell -u neo4j -p neo4j
 
 CREATE CONSTRAINT unique_user_pubkey
 IF NOT EXISTS
