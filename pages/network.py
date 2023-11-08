@@ -81,9 +81,10 @@ def layout(num_users=5):
         [
             html.H3(f"Top {num_users} Most Followed Pubkeys"),
             html.Table(format_html_results(df_followed)),
-            html.Hr(),  # Horizontal line to separate the sections
+            html.Hr(),
             html.H3(f"Top {num_users} Most Targeted Users"),
             html.Table(format_html_results(df_targeted)),
+            html.Hr(),
             html.H3(f"Top {num_users} Most Active Users"),
             html.Table(format_html_results(df_active)),
         ]

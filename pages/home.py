@@ -31,10 +31,9 @@ def get_local_db_summary():
 
 
 def layout():
-    summary_text = get_local_db_summary()
     layout = html.Div(
         [
-            html.P(f"{summary_text}"),
+            html.P(f"{get_local_db_summary()}"),
         ]
     )
     return layout

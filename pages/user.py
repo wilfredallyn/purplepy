@@ -64,9 +64,21 @@ def layout(npub=None, num_fans=5):
             dash_table.DataTable(
                 id="results-table",
                 columns=[
-                    {"name": i, "id": i} for i in ["npub", "mentions", "reactions"]
+                    {
+                        "name": "npub",
+                        "id": "npub",
+                        "type": "text",
+                        "presentation": "markdown",
+                    },
+                    {
+                        "name": "mentions",
+                        "id": "mentions",
+                    },
+                    {"name": "reactions", "id": "reactions"},
                 ],
                 data=[],
+                style_cell={"textAlign": "left"},
+                markdown_options={"link_target": "_blank"},
             ),
         ]
     )
@@ -110,7 +122,7 @@ def update_graph(
 
     table_data = [
         {
-            "npub": get_npub(record["user.pubkey"]),
+            "npub": f"[{get_npub(record['user.pubkey'])}](https://njump.me/{get_npub(record['user.pubkey'])})",
             "mentions": record["mentions"],
             "reactions": record["reactions"],
         }

@@ -8,14 +8,14 @@ def plot_histogram(df, groupby_cols=None, title=""):
     elif isinstance(groupby_cols, str):
         groupby_cols = [groupby_cols]
 
-    df_grp = df.groupby(groupby_cols).size().reset_index(name="count")
-
-    if len(groupby_cols) == 1:
-        fig = px.histogram(df_grp, x=groupby_cols[0], y="count", title=title)
-    elif len(groupby_cols) > 1:
-        fig = px.histogram(
-            df_grp, x=groupby_cols[0], y="count", color=groupby_cols[1], title=title
-        )
-    else:
+    if len(groupby_cols) == 0:
         fig = px.histogram(df_grp, x="count", title=title)
+    else:
+        df_grp = df.groupby(groupby_cols).size().reset_index(name="count")
+        if len(groupby_cols) == 1:
+            fig = px.histogram(df_grp, x=groupby_cols[0], y="count", title=title)
+        else:  # len(groupby_cols) > 1
+            fig = px.histogram(
+                df_grp, x=groupby_cols[0], y="count", color=groupby_cols[1], title=title
+            )
     return fig
