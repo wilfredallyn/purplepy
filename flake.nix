@@ -55,15 +55,17 @@
 
   in rec {
     packages = {
-      pythonEnv = pkgs.python310.withPackages (ps: with ps; [
+      pythonEnv = pkgs.python311.withPackages (ps: with ps; [
         black
         dash
         dashBootstrapComponents
         jupyter
+        lmdb
         neo4j
         nostrSdk
         numpy
         pandas
+        plotly
         pip
         psycopg2
         pytest
@@ -81,6 +83,7 @@
         packages.pythonEnv
         packages.postgres
         packages.neo4j
+        pkgs.docker-compose
       ];
       
       shellHook = ''
@@ -102,10 +105,11 @@
         echo "port = 5432" >> "$PGDATA/postgresql.conf"
 
 
-        # start pgsql
-        # if ! pg_ctl status -D pgsql &>/dev/null; then
-        #   pg_ctl start -D pgsql
-        # fi
+        if ! pg_ctl status &>/dev/null; then
+          pg_ctl start
+        else
+          echo "PostgreSQL is running"
+        fi
 
         # Set up Neo4j
         NEO4J_CONF_DIR="$PWD/neo4j-conf"
@@ -133,9 +137,15 @@
 
         export NEO4J_CONF=$NEO4J_CONF_DIR
         neo4j-admin set-initial-password neo4j
+        
+        if ! neo4j status &>/dev/null; then
+          neo4j start
+        else
+          echo "Neo4j is running"
+        fi
 
-        echo "To start PostgreSQL: pg_ctl start"
-        echo "To start Neo4j: neo4j start"
+        echo "To stop PostgreSQL: pg_ctl stop"
+        echo "To stop Neo4j: neo4j stop"
       '';
     };
   });

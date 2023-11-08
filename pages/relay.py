@@ -16,6 +16,16 @@ def layout():
     return dbc.Container(
         [
             dbc.Row(
+                dbc.Col(
+                    html.P(
+                        "Query relays for more events. Events will be stored in local postgres and neo4j databases",
+                        className="text-start",
+                    ),
+                    width={"size": 10, "offset": 2},
+                ),
+                className="mb-2",  # Adjust margin as needed
+            ),
+            dbc.Row(
                 [
                     dbc.Col(html.Label("Enter npub:"), width=2),
                     dbc.Col(

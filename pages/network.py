@@ -69,7 +69,7 @@ def layout(num_users=5):
     df_targeted = pd.DataFrame(result_targeted)
     df_active = pd.DataFrame(result_active)
 
-    if len(df_followed) == 0 or len(df_targeted) == 0 or len(df_active) == 0:
+    if len(df_followed) == 0 and len(df_targeted) == 0 and len(df_active) == 0:
         layout = html.Div(
             [
                 html.P(f"Import data into Neo4j to analyze network"),

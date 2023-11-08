@@ -10,12 +10,18 @@ load_dotenv()
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
 
 
+page_order = ["Home", "Query Relays", "Network", "User", "Neo4j"]
+ordered_pages = sorted(
+    dash.page_registry.values(), key=lambda page: page_order.index(page["name"])
+)
+
+
 sidebar = dbc.Nav(
     [
         dbc.NavLink(
             html.Div(page["name"], className="ms-2"), href=page["path"], active="exact"
         )
-        for page in dash.page_registry.values()
+        for page in ordered_pages
     ],
     vertical=True,
     pills=True,

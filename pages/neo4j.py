@@ -1,7 +1,7 @@
 import dash
 from dash import html
 
-dash.register_page(__name__, path_template="/neo4j")
+dash.register_page(__name__, path_template="/neo4j", name="Neo4j")
 
 
 def layout():
@@ -18,11 +18,17 @@ def layout():
                 """
 Example cypher query:
 
-// Identify the user with the most follows
+// Identify most targeted user
+MATCH (targetedUser:User)<-[:TARGETS]-()
+RETURN targetedUser.pubkey AS pubkey, COUNT(*) AS times_targeted
+ORDER BY times_targeted DESC
+LIMIT 5
+
+// Identify most followed user
 MATCH (u:User)-[r:FOLLOWS]->(other:User)
 WITH u, COUNT(r) AS followsCount
 ORDER BY followsCount DESC
-LIMIT 1
+LIMIT 5
 RETURN u, followsCount
 
 // Return the network graph for that user

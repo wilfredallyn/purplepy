@@ -24,7 +24,7 @@ def get_local_db_summary():
         if result and num_events > 0:
             start_date = parse_datetime_str(result.start_date)
             end_date = parse_datetime_str(result.end_date)
-            summary_text = f"There are {num_events} events between {start_date} and {end_date} in the local database"
+            summary_text = f"There are {num_events} events between {start_date} and {end_date} in the local postgres and neo4j databases"
         else:
             summary_text = "There are no events in the local database"
     return summary_text
