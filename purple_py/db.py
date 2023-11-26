@@ -2,11 +2,38 @@ from datetime import datetime, timezone
 import json
 import lmdb
 import os
+from sentence_transformers import SentenceTransformer
 
 STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
 WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
 MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
 WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
+
+
+def process_events(client):
+    # vectorize event content: parse content from events for embeddings
+    process_output = {}
+    process_output["event_id_list"] = []
+    process_output["content_list"] = []
+
+    process_output = read_strfy_db(
+        client,
+        process_fn=get_content_for_embeddings,
+        process_output=process_output,
+    )
+    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+    process_output["embedding_list"] = embedding_model.encode(
+        process_output["content_list"]
+    )
+
+    # load data into weaviate
+    process_output["pubkey_dict"] = {}
+    process_output = query_db_for_record(
+        client=client,
+        process_fn=create_weaviate_record,
+        process_input=process_output,
+    )
+    add_npub_cross_ref(client)
 
 
 def read_strfy_db(client, process_fn, process_output):
