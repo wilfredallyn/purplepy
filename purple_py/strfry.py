@@ -3,15 +3,12 @@ import json
 import lmdb
 import os
 
-STRFRY_PATH = "/home/wa/Documents/strfry/strfry-db-test"
-# STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
-WEAVIATE_BATCH_SIZE = os.getenv("WEAVIATE_CLIENT_BATCH_SIZE")
-WEAVIATE_BATCH_SIZE = int(WEAVIATE_BATCH_SIZE) if WEAVIATE_BATCH_SIZE else 1000
-MIN_CONTENT_LENGTH = os.getenv("MIN_CONTENT_LENGTH")
-MIN_CONTENT_LENGTH = int(MIN_CONTENT_LENGTH) if MIN_CONTENT_LENGTH else 50
+STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
+WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
+MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
+WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
 
 
-# pass in function to process for every record?
 def read_strfy_db(client, process_fn, process_output):
     env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
     db_id = env.open_db(b"rasgueadb_defaultDb__Event__id")
@@ -40,11 +37,6 @@ def get_content_for_embeddings(event_json, process_output, batch):
         process_output["event_id_list"].append(event_json["id"])
         process_output["content_list"].append(event_json["content"])
     return process_output
-
-
-def load_weaviate_data(event_json, batch, process_input):
-    # encode embeddings, query for event_id, create data object
-    event_id_list, content_list = process_input
 
 
 def query_db_for_record(client, process_fn, process_input):
@@ -106,3 +98,151 @@ def create_weaviate_record(event_json, batch, process_input):
             class_name="User",
         )
     return process_input
+
+
+def add_npub_cross_ref(client):
+    offset = 0
+    user_uuids_dict = {}
+    with client.batch as batch:
+        while True:
+            events_response = (
+                client.query.get(
+                    "Event", ["event_id", "content", "pubkey", "_additional { id }"]
+                )
+                .with_limit(WEAVIATE_PAGE_LIMIT)
+                .with_offset(offset)
+                .do()
+            )
+
+            events = events_response["data"]["Get"]["Event"]
+            if not events:
+                break
+            for event in events:
+                pubkey = event["pubkey"]
+                user_uuid = user_uuids_dict.get(pubkey)
+
+                if not user_uuid:
+                    user_response = (
+                        client.query.get("User", ["_additional { id }"])
+                        .with_where(
+                            {
+                                "operator": "Equal",
+                                "path": ["pubkey"],
+                                "valueString": pubkey,
+                            }
+                        )
+                        .do()
+                    )
+                    if user_response["data"]["Get"]["User"]:
+                        user_uuid = user_response["data"]["Get"]["User"][0][
+                            "_additional"
+                        ]["id"]
+                        user_uuids_dict[pubkey] = user_uuid
+
+                if user_uuid:
+                    batch.add_reference(
+                        from_object_uuid=user_uuid,
+                        from_object_class_name="User",
+                        from_property_name="hasCreated",
+                        to_object_uuid=event["_additional"]["id"],
+                        to_object_class_name="Event",
+                    )
+            if len(events) < WEAVIATE_PAGE_LIMIT:
+                break
+            offset += WEAVIATE_PAGE_LIMIT
+
+
+def create_weaviate_user_class(client):
+    user_class = {
+        "class": "User",
+        "description": "Users",
+        "vectorIndexType": "hnsw",
+        "vectorIndexConfig": {
+            "skip": True,  # don't need to vector index users
+        },
+        "properties": [
+            {"name": "pubkey", "dataType": ["text"]},
+            {"name": "name", "dataType": ["text"]},
+            {"name": "hasCreated", "dataType": ["Event"]},  # cross-reference
+        ],
+        "vectorizer": None,
+    }
+    # client.schema.delete_class('User')
+    client.schema.create_class(user_class)
+
+
+def create_weaviate_event_class(client):
+    event_class = {
+        "class": "Event",
+        "description": "Events",
+        "vectorIndexType": "hnsw",
+        "vectorIndexConfig": {
+            "distance": "cosine",
+        },
+        "invertedIndexConfig": {
+            "stopwords": {
+                "preset": "en",
+            }
+        },
+        "properties": [
+            {
+                "name": "event_id",
+                "dataType": ["text"],
+                "moduleConfig": {
+                    "text2vec-transformers": {
+                        "skip": True,
+                        "vectorizePropertyName": False,
+                    }
+                },
+            },
+            {
+                "name": "created_at",
+                "dataType": ["date"],
+                "moduleConfig": {
+                    "text2vec-transformers": {
+                        "skip": True,
+                        "vectorizePropertyName": False,
+                    }
+                },
+            },
+            {
+                "name": "pubkey",
+                "dataType": ["text"],
+                "moduleConfig": {
+                    "text2vec-transformers": {
+                        "skip": True,
+                        "vectorizePropertyName": False,
+                    }
+                },
+            },
+            {
+                "name": "kind",
+                "dataType": ["int"],
+                "moduleConfig": {
+                    "text2vec-transformers": {
+                        "skip": True,
+                        "vectorizePropertyName": False,
+                    }
+                },
+            },
+            {
+                "name": "content",
+                "dataType": ["text"],
+                "moduleConfig": {
+                    "text2vec-transformers": {
+                        "skip": False,
+                        "vectorizePropertyName": False,
+                    }
+                },
+            },
+            # tags
+        ],
+        "vectorizer": "text2vec-transformers",
+        "moduleConfig": {
+            "text2vec-transformers": {
+                "vectorizeClassName": False,
+            }
+        },
+    }
+    # client.schema.delete_class('Event')
+    client.schema.create_class(event_class)
