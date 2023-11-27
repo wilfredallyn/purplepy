@@ -3,6 +3,8 @@ import json
 import lmdb
 import os
 from sentence_transformers import SentenceTransformer
+import subprocess
+
 
 STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
 WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
@@ -10,7 +12,7 @@ MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
 WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
 
 
-def process_events(client):
+def load_events_into_weaviate(client):
     # vectorize event content: parse content from events for embeddings
     process_output = {}
     process_output["event_id_list"] = []
@@ -273,3 +275,21 @@ def create_weaviate_event_class(client):
     }
     # client.schema.delete_class('Event')
     client.schema.create_class(event_class)
+
+
+def load_neo4j_data():
+    # add replys after add ref_pubkey
+    expected_kinds = ["follows", "mentions", "reactions", "users"]
+    # expected_kinds = ["follows", "mentions", "reactions", "replys", "users"]
+    for kind_name in expected_kinds:
+        command = f"echo ':source neo4j-import/import_{kind_name}.cypher' | cypher-shell -u neo4j -p neo4j"
+        result = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        if result.returncode != 0:
+            print("Error executing command:", result.stderr)
