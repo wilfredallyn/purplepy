@@ -1,8 +1,15 @@
+from dotenv import load_dotenv
 import json
+from log import logger
+import os
 import pandas as pd
 
 
+load_dotenv()
+
+
 def parse_event_json(db_file):
+    NEO4J_IMPORT_DIR = os.getenv("NEO4J_IMPORT_DIR")
     data = []
     with open(db_file, "r") as file:
         for line in file:
@@ -11,20 +18,20 @@ def parse_event_json(db_file):
     df = df.set_index("id")
 
     df_reply = parse_reply_tags(df.copy())
-    df_reply.to_csv("neo4j-import/replys.csv")
+    df_reply.to_csv(os.path.join(NEO4J_IMPORT_DIR, "replys.csv"))
 
     df_mention = parse_mention_tags(df.copy())
-    df_mention.to_csv("neo4j-import/mentions.csv")
+    df_mention.to_csv(os.path.join(NEO4J_IMPORT_DIR, "mentions.csv"))
 
     df_reaction = parse_reactions(df.copy())
-    df_reaction.to_csv("neo4j-import/reactions.csv")
+    df_reaction.to_csv(os.path.join(NEO4J_IMPORT_DIR, "reactions.csv"))
 
     df_follow = parse_follows(df.copy())
-    df_follow.to_csv("neo4j-import/follows.csv")
+    df_follow.to_csv(os.path.join(NEO4J_IMPORT_DIR, "follows.csv"))
 
     df_user = parse_user_metadata(df.copy())
-    df_user.to_csv("neo4j-import/users.csv")
-    return df
+    df_user.to_csv(os.path.join(NEO4J_IMPORT_DIR, "users.csv"))
+    return
 
 
 def parse_user_metadata(df):
@@ -121,7 +128,7 @@ def parse_reply_row(row):
             # return [id, pubkey, ref_id, created_at, kind, relay_url, marker]
             return [row.name, row.pubkey, lst[1], row.created_at, row.kind, None, None]
         else:
-            print(f"expected 2-4 fields for e tags: {row}: {lst}")
+            logger.error(f"expected 2-4 fields for e tags: {row}: {lst}")
     return None
 
 
@@ -182,8 +189,7 @@ def parse_mention_row(row):
             # return [id, pubkey, ref_pubkey, created_at, kind, relay_url, petname]
             return [row.name, row.pubkey, lst[1], row.created_at, row.kind, None, None]
         elif len(lst) > 4:
-            print(f"{row.name}: {lst}")
-            raise ValueError("> 4 fields for p tags")
+            logger.error(f"> 4 fields for p tags: {row.name}: {lst}")
     return None
 
 

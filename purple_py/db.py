@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 import json
 import lmdb
 import os
@@ -6,10 +7,14 @@ from sentence_transformers import SentenceTransformer
 import subprocess
 
 
+load_dotenv()
+
+
 STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
 WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
 MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
 WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
+NEO4J_IMPORT_DIR = os.getenv("NEO4J_IMPORT_DIR")
 
 
 def load_events_into_weaviate(client):
@@ -282,7 +287,7 @@ def load_neo4j_data():
     expected_kinds = ["follows", "mentions", "reactions", "users"]
     # expected_kinds = ["follows", "mentions", "reactions", "replys", "users"]
     for kind_name in expected_kinds:
-        command = f"echo ':source neo4j-import/import_{kind_name}.cypher' | cypher-shell -u neo4j -p neo4j"
+        command = f"echo ':source {NEO4J_IMPORT_DIR}/import_{kind_name}.cypher' | cypher-shell -u neo4j -p neo4j"
         result = subprocess.run(
             command,
             shell=True,
