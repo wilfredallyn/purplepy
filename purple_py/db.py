@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import json
 import lmdb
+from neo4j import GraphDatabase
+from neo4j.exceptions import ServiceUnavailable
 import os
 from sentence_transformers import SentenceTransformer
 import subprocess
@@ -298,3 +300,17 @@ def load_neo4j_data():
 
         if result.returncode != 0:
             print("Error executing command:", result.stderr)
+
+
+def get_neo4j_driver():
+    neo4j_uri = os.getenv("NEO4J_URI")  # bolt://localhost:7687
+    username = os.getenv("NEO4J_USERNAME")
+    password = os.getenv("NEO4J_PASSWORD")
+    try:
+        neo4j_driver = GraphDatabase.driver(neo4j_uri, auth=(username, password))
+    except ServiceUnavailable as e:
+        print(f"Error connecting to neo4j: {e}")
+    return neo4j_driver
+
+
+neo4j_driver = get_neo4j_driver()
