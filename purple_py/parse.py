@@ -15,6 +15,7 @@ def parse_event_json(db_file):
         for line in file:
             data.append(json.loads(line))
     df = pd.DataFrame(data)
+    df = df[df["id"].notna() & (df["id"] != "")]
     df = df.set_index("id")
 
     df_reply = parse_reply_tags(df.copy())
@@ -39,10 +40,10 @@ def parse_user_metadata(df):
     df_metadata = df[df.kind == 0].copy().reset_index(drop=False)
     df_content = (
         df_metadata["content"]
-        .apply(json.loads)
+        .apply(lambda s: safe_json_loads(s))
         .apply(pd.Series)
         .reset_index(drop=True)
-        .drop(columns=["created_at"], errors="ignore")
+        .drop(columns=["created_at", "pubkey"], errors="ignore")
     )
     df_user = (
         pd.concat(
@@ -54,6 +55,14 @@ def parse_user_metadata(df):
         )
     ).set_index("pubkey")
     return df_user
+
+
+def safe_json_loads(s):
+    try:
+        return json.loads(s.replace(r"\n", " "))
+    except json.JSONDecodeError:
+        logger.error(f"Error parsing JSON content: {s}")
+        return {}
 
 
 def parse_tags(df, filter_tag=None, keep_col=None, keep_last=False):
@@ -205,5 +214,8 @@ def parse_follows(df):
 def parse_reactions(df):
     df_reactions = parse_tags(
         df[df["kind"] == 7], filter_tag=["e", "p"], keep_col="content", keep_last=True
-    ).set_index("id")
+    )
+    # event_id cannot be null
+    df_reactions = df_reactions[df_reactions["e"].notna() & (df_reactions["e"] != "")]
+    df_reactions = df_reactions.set_index("id")
     return df_reactions
