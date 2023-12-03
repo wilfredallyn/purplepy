@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import json
-from log import logger
+from purple_py.log import logger
 import os
 import pandas as pd
 
