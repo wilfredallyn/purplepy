@@ -1,4 +1,5 @@
 from nostr_sdk import PublicKey
+import pandas as pd
 from purple_py.log import logger
 
 
@@ -31,12 +32,4 @@ def query_weaviate(client, npub=None, kind=None):
     if "errors" in response:
         logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
     else:
-        return response["data"]["Get"]["Event"]
-
-
-# def get_events_by_time(df):
-#     if "created_at" in df.columns:
-#         df["created_at"] = df["created_at"].apply(parse_datetime)
-#     df["day_of_week"] = df["created_at"].dt.day_name()
-#     df["hour_of_day"] = df["created_at"].dt.hour
-#     return df
+        return pd.DataFrame(response["data"]["Get"]["Event"])

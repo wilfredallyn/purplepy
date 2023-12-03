@@ -1,3 +1,4 @@
+import atexit
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 import json
@@ -7,6 +8,7 @@ from neo4j.exceptions import ServiceUnavailable
 import os
 from sentence_transformers import SentenceTransformer
 import subprocess
+import weaviate
 
 
 load_dotenv()
@@ -313,4 +315,13 @@ def get_neo4j_driver():
     return neo4j_driver
 
 
+def close_neo4j_driver():
+    neo4j_driver.close()
+
+
 neo4j_driver = get_neo4j_driver()
+atexit.register(close_neo4j_driver)
+
+client = weaviate.Client(
+    url="http://localhost:8080",
+)

@@ -1,9 +1,8 @@
 import dash
 from dash import html
-
-from purple_py.db import neo4j_driver
 from nostr_sdk import PublicKey
 import pandas as pd
+from purple_py.db import neo4j_driver
 
 
 dash.register_page(__name__, path_template="/network", name="Network")
@@ -62,9 +61,9 @@ def format_html_results(df):
 
 def layout(num_users=5):
     with neo4j_driver.session() as session:
-        result_followed = session.read_transaction(get_top_followed_pubkeys, num_users)
-        result_targeted = session.read_transaction(get_most_targeted_user, num_users)
-        result_active = session.read_transaction(get_most_active_users, num_users)
+        result_followed = session.execute_read(get_top_followed_pubkeys, num_users)
+        result_targeted = session.execute_read(get_most_targeted_user, num_users)
+        result_active = session.execute_read(get_most_active_users, num_users)
 
     df_followed = pd.DataFrame(result_followed)
     df_targeted = pd.DataFrame(result_targeted)
