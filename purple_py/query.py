@@ -33,3 +33,22 @@ def query_weaviate(client, npub=None, kind=None):
         logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
     else:
         return pd.DataFrame(response["data"]["Get"]["Event"])
+
+
+def search_weaviate(client, text):
+    response = (
+        client.query.get("Event", ["event_id, created_at, kind, content"])
+        .with_near_text({"concepts": [text]})
+        .with_limit(10)
+        .with_additional(["distance"])
+        .do()
+    )
+
+    if "errors" in response:
+        logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
+    else:
+        df = pd.DataFrame(response["data"]["Get"]["Event"])
+        df["distance"] = df["_additional"].apply(
+            lambda x: x["distance"] if isinstance(x, dict) else None
+        )
+        return df.sort_values("distance", ascending=False).drop(columns=["_additional"])

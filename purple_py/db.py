@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import json
 import lmdb
+from purple_py.log import logger
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 import os
@@ -301,7 +302,7 @@ def load_neo4j_data():
         )
 
         if result.returncode != 0:
-            print("Error executing command:", result.stderr)
+            logger.error("Error executing command:", result.stderr)
 
 
 def get_neo4j_driver():
