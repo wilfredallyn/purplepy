@@ -97,3 +97,41 @@ def filter_users(client, min_num_events=5):
                 )
     df = pd.DataFrame(data)
     return df
+
+
+def get_user_uuid(client, pubkey):
+    user_response = (
+        client.query.get("User", ["_additional { id }"])
+        .with_where(
+            {
+                "operator": "Equal",
+                "path": ["pubkey"],
+                "valueString": pubkey,
+            }
+        )
+        .do()
+    )
+    if user_response["data"]["Get"]["User"]:
+        user_uuid = user_response["data"]["Get"]["User"][0]["_additional"]["id"]
+    else:
+        user_uuid = None
+    return user_uuid
+
+
+def get_similar_users(client, pubkey, limit=None):
+    response = (
+        client.query.get("User", ["pubkey, name"])
+        .with_near_object({"id": get_user_uuid(client, pubkey)})
+        .with_limit(limit)
+        .with_additional(["distance"])
+        .do()
+    )
+
+    if "errors" in response:
+        logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
+    else:
+        df = pd.DataFrame(response["data"]["Get"]["User"])
+        df["distance"] = df["_additional"].apply(
+            lambda x: x["distance"] if isinstance(x, dict) else None
+        )
+        return df.sort_values("distance", ascending=False).drop(columns=["_additional"])

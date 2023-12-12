@@ -16,7 +16,7 @@ from purple_py.config import (
     WEAVIATE_PAGE_LIMIT,
 )
 from purple_py.log import logger
-from purple_py.query import filter_users
+from purple_py.query import filter_users, get_user_uuid
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 import os
@@ -202,20 +202,7 @@ def add_npub_mean_vec(client):
     )
 
     for pubkey in df_vec.index:
-        user_response = (
-            client.query.get("User", ["_additional { id }"])
-            .with_where(
-                {
-                    "operator": "Equal",
-                    "path": ["pubkey"],
-                    "valueString": pubkey,
-                }
-            )
-            .do()
-        )
-        user_uuid = None
-        if user_response["data"]["Get"]["User"]:
-            user_uuid = user_response["data"]["Get"]["User"][0]["_additional"]["id"]
+        user_uuid = get_user_uuid(client, pubkey)
 
         # api does not support batch update
         if user_uuid:
@@ -233,14 +220,24 @@ def create_weaviate_user_class(client):
         "description": "Users",
         "vectorIndexType": "hnsw",
         "vectorIndexConfig": {
-            "skip": True,  # don't need to vector index users
+            "distance": "cosine",
         },
+        # "invertedIndexConfig": {
+        #     "stopwords": {
+        #         "preset": "en",
+        #     }
+        # },
         "properties": [
             {"name": "pubkey", "dataType": ["text"]},
             {"name": "name", "dataType": ["text"]},
             {"name": "hasCreated", "dataType": ["Event"]},  # cross-reference
         ],
-        "vectorizer": None,
+        "vectorizer": "text2vec-transformers",
+        "moduleConfig": {
+            "text2vec-transformers": {
+                "vectorizeClassName": False,
+            }
+        },
     }
     # client.schema.delete_class('User')
     client.schema.create_class(user_class)
