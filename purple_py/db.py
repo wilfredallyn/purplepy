@@ -3,6 +3,17 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import json
 import lmdb
+from purple_py.config import (
+    MIN_CONTENT_LENGTH,
+    NEO4J_IMPORT_DIR,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USERNAME,
+    STRFRY_PATH,
+    WEAVIATE_BATCH_SIZE,
+    WEAVIATE_CLIENT_URL,
+    WEAVIATE_PAGE_LIMIT,
+)
 from purple_py.log import logger
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -10,16 +21,6 @@ import os
 from sentence_transformers import SentenceTransformer
 import subprocess
 import weaviate
-
-
-load_dotenv()
-
-
-STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
-WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
-MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
-WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
-NEO4J_IMPORT_DIR = os.getenv("NEO4J_IMPORT_DIR")
 
 
 def load_events_into_weaviate(client):
@@ -306,11 +307,10 @@ def load_neo4j_data():
 
 
 def get_neo4j_driver():
-    neo4j_uri = os.getenv("NEO4J_URI")  # bolt://localhost:7687
-    username = os.getenv("NEO4J_USERNAME")
-    password = os.getenv("NEO4J_PASSWORD")
     try:
-        neo4j_driver = GraphDatabase.driver(neo4j_uri, auth=(username, password))
+        neo4j_driver = GraphDatabase.driver(
+            NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+        )
     except ServiceUnavailable as e:
         print(f"Error connecting to neo4j: {e}")
     return neo4j_driver
@@ -324,5 +324,5 @@ neo4j_driver = get_neo4j_driver()
 atexit.register(close_neo4j_driver)
 
 client = weaviate.Client(
-    url="http://localhost:8080",
+    url=WEAVIATE_CLIENT_URL,
 )
