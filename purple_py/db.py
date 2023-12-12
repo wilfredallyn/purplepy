@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import json
 import lmdb
+import numpy as np
 from purple_py.config import (
     MIN_CONTENT_LENGTH,
     NEO4J_IMPORT_DIR,
@@ -15,6 +16,7 @@ from purple_py.config import (
     WEAVIATE_PAGE_LIMIT,
 )
 from purple_py.log import logger
+from purple_py.query import filter_users
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 import os
@@ -47,6 +49,7 @@ def load_events_into_weaviate(client):
         process_input=process_output,
     )
     add_npub_cross_ref(client)
+    add_npub_mean_vec(client)
 
 
 def read_strfy_db(client, process_fn, process_output):
@@ -190,6 +193,38 @@ def add_npub_cross_ref(client):
             if len(events) < WEAVIATE_PAGE_LIMIT:
                 break
             offset += WEAVIATE_PAGE_LIMIT
+
+
+def add_npub_mean_vec(client):
+    df_filter = filter_users(client, min_num_events=5)
+    df_vec = df_filter.groupby("pubkey")["vector"].apply(
+        lambda x: np.mean(x.tolist(), axis=0)
+    )
+
+    for pubkey in df_vec.index:
+        user_response = (
+            client.query.get("User", ["_additional { id }"])
+            .with_where(
+                {
+                    "operator": "Equal",
+                    "path": ["pubkey"],
+                    "valueString": pubkey,
+                }
+            )
+            .do()
+        )
+        user_uuid = None
+        if user_response["data"]["Get"]["User"]:
+            user_uuid = user_response["data"]["Get"]["User"][0]["_additional"]["id"]
+
+        # api does not support batch update
+        if user_uuid:
+            client.data_object.update(
+                uuid=user_uuid,
+                class_name="User",
+                data_object={},
+                vector=df_vec.loc[pubkey],
+            )
 
 
 def create_weaviate_user_class(client):

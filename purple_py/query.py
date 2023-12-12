@@ -1,5 +1,6 @@
 from nostr_sdk import PublicKey
 import pandas as pd
+from purple_py.config import WEAVIATE_PAGE_LIMIT
 from purple_py.log import logger
 
 
@@ -25,7 +26,7 @@ def query_weaviate(client, npub=None, kind=None):
         client.query.get("Event", ["event_id, created_at, pubkey, kind, content"])
         # .get("Event", ["event_id, created_at, kind, content, _additional { vector }"])
         .with_where(combined_filter)
-        .with_limit(10000)
+        .with_limit(WEAVIATE_PAGE_LIMIT)
         .do()
     )
 
@@ -56,6 +57,8 @@ def search_weaviate(client, text, limit=None):
         return df.sort_values("distance", ascending=False).drop(columns=["_additional"])
 
 
+# todo: handle case where num users > 10k (WEAVIATE_PAGE_LIMIT)
+# https://github.com/deepset-ai/haystack/issues/3390
 def filter_users(client, min_num_events=5):
     where_filter = {
         "valueInt": min_num_events,
@@ -72,6 +75,7 @@ def filter_users(client, min_num_events=5):
             ],
         )
         .with_where(where_filter)
+        .with_limit(WEAVIATE_PAGE_LIMIT)
         .do()
     )
 
