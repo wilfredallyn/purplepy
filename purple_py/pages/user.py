@@ -7,7 +7,7 @@ from purple_py.db import (
     neo4j_driver,
 )
 from purple_py.plot import plot_histogram
-from purple_py.query import query_weaviate
+from purple_py.query import query_weaviate, get_similar_users
 from purple_py.utils import get_pubkey_hex, get_npub, get_events_by_time, parse_datetime
 
 
@@ -60,9 +60,25 @@ def layout(npub=None, num_fans=5):
                     dcc.Graph(id="graph-output"),
                 ],
             ),
+            html.H3(f"Similar Users"),
+            dash_table.DataTable(
+                id="similar-table",
+                columns=[
+                    {
+                        "name": "npub",
+                        "id": "npub",
+                        "type": "text",
+                        "presentation": "markdown",
+                    },
+                ],
+                data=[],
+                style_cell={"textAlign": "left"},
+                markdown_options={"link_target": "_blank"},
+            ),
+            html.Br(),
             html.H3(f"Biggest Fans"),
             dash_table.DataTable(
-                id="results-table",
+                id="fans-table",
                 columns=[
                     {
                         "name": "npub",
@@ -86,7 +102,11 @@ def layout(npub=None, num_fans=5):
 
 
 @callback(
-    [Output("graph-output", "figure"), Output("results-table", "data")],
+    [
+        Output("graph-output", "figure"),
+        Output("similar-table", "data"),
+        Output("fans-table", "data"),
+    ],
     # Input("store-data", "data"),  # add to query with npub in querystring
     Input("plot-type-checklist", "value"),
     Input("submit-npub-button", "n_clicks"),
@@ -100,6 +120,8 @@ def update_graph(
     #     npub = input_npub
     # else:
     #     npub = data["npub"]
+
+    # plot histogram
     if n_clicks == 0:
         return px.scatter(template=None), [{}]
     npub = input_npub
@@ -117,15 +139,26 @@ def update_graph(
         df, groupby_cols=groupby_cols, title=f"Histogram of events for {npub}"
     )
 
-    with neo4j_driver.session() as session:
-        results = session.execute_read(get_biggest_fans, npub, num_fans)
+    # find similar users
+    similar_data = [{"npub": "npub123"}]
+    df_similar = get_similar_users(client, get_pubkey_hex(npub), limit=num_fans)
+    similar_data = [
+        {
+            "npub": f"[{npub}](https://njump.me/{npub})",
+        }
+        for npub in df_similar["npub"]
+    ]
 
-    table_data = [
+    # find biggest fans
+    with neo4j_driver.session() as session:
+        fans_results = session.execute_read(get_biggest_fans, npub, num_fans)
+
+    fans_data = [
         {
             "npub": f"[{get_npub(record['user.pubkey'])}](https://njump.me/{get_npub(record['user.pubkey'])})",
             "mentions": record["mentions"],
             "reactions": record["reactions"],
         }
-        for record in results
+        for record in fans_results
     ]
-    return fig, table_data
+    return fig, similar_data, fans_data

@@ -2,6 +2,7 @@ from nostr_sdk import PublicKey
 import pandas as pd
 from purple_py.config import WEAVIATE_PAGE_LIMIT
 from purple_py.log import logger
+from purple_py.utils import get_npub
 
 
 def query_weaviate(client, npub=None, kind=None):
@@ -54,7 +55,7 @@ def search_weaviate(client, text, limit=None):
         df["distance"] = df["_additional"].apply(
             lambda x: x["distance"] if isinstance(x, dict) else None
         )
-        return df.sort_values("distance", ascending=False).drop(columns=["_additional"])
+        return df.sort_values("distance", ascending=True).drop(columns=["_additional"])
 
 
 # todo: handle case where num users > 10k (WEAVIATE_PAGE_LIMIT)
@@ -119,10 +120,12 @@ def get_user_uuid(client, pubkey):
 
 
 def get_similar_users(client, pubkey, limit=None):
+    if not limit:
+        limit = 5
     response = (
         client.query.get("User", ["pubkey, name"])
         .with_near_object({"id": get_user_uuid(client, pubkey)})
-        .with_limit(limit)
+        .with_limit(limit + 1)
         .with_additional(["distance"])
         .do()
     )
@@ -131,7 +134,10 @@ def get_similar_users(client, pubkey, limit=None):
         logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
     else:
         df = pd.DataFrame(response["data"]["Get"]["User"])
+        df = df[df["pubkey"] != pubkey]
         df["distance"] = df["_additional"].apply(
             lambda x: x["distance"] if isinstance(x, dict) else None
         )
-        return df.sort_values("distance", ascending=False).drop(columns=["_additional"])
+        df["npub"] = df["pubkey"].apply(get_npub)
+        df = df.sort_values("distance", ascending=True).drop(columns=["_additional"])
+        return df
