@@ -1,0 +1,56 @@
+# weaviate uses docker (not nix)
+# https://weaviate.io/developers/weaviate/installation/docker-compose
+version: '3.4'
+services:
+  weaviate:
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - '8080'
+      - --scheme
+      - http
+    image: semitechnologies/weaviate:1.22.4
+    ports:
+      - 8080:8080
+      - 50051:50051
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    restart: on-failure:0
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_MODULES: 'text2vec-transformers,qna-transformers'
+      DEFAULT_VECTORIZER_MODULE: text2vec-transformers
+      TRANSFORMERS_INFERENCE_API: http://t2v-transformers:8080
+      QNA_INFERENCE_API: "http://qna-transformers:8080"
+      CLUSTER_HOSTNAME: 'node1'
+  t2v-transformers:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    environment:
+      ENABLE_CUDA: 0
+    # enable gpu
+    #   ENABLE_CUDA: '1'
+    #   NVIDIA_VISIBLE_DEVICES: all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #       - capabilities: [gpu]
+  qna-transformers:
+    image: semitechnologies/qna-transformers:bert-large-uncased-whole-word-masking-finetuned-squad
+    environment:
+      ENABLE_CUDA: 0
+    # enable gpu
+    #   ENABLE_CUDA: '1'
+    #   NVIDIA_VISIBLE_DEVICES: all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #       - capabilities: [gpu]
+volumes:
+  weaviate_data:
+
+

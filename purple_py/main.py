@@ -12,6 +12,8 @@ from purple_py.parse import parse_event_json
 # download events in strfry
 # strfry router strfry-router.config
 
+# start weaviate docker container
+# docker compose up -d && docker compose logs -f weaviate
 
 # load events into weaviate
 create_weaviate_event_class(client)
