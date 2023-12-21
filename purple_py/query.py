@@ -34,7 +34,10 @@ def query_weaviate(client, npub=None, kind=None):
     if "errors" in response:
         logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
     else:
-        return pd.DataFrame(response["data"]["Get"]["Event"])
+        df = pd.DataFrame(response["data"]["Get"]["Event"])
+        if "kind" in df.columns:
+            df["kind"] = df["kind"].astype(str)
+        return df
 
 
 def search_weaviate(client, text, limit=None):
@@ -141,3 +144,21 @@ def get_similar_users(client, pubkey, limit=None):
         df["npub"] = df["pubkey"].apply(get_npub)
         df = df.sort_values("distance", ascending=True).drop(columns=["_additional"])
         return df
+
+
+def get_kind_counts(client):
+    response = (
+        client.query.aggregate("Event")
+        .with_group_by_filter(["kind"])
+        .with_fields("groupedBy { value }")
+        .with_meta_count()
+        .do()
+    )
+    events = response["data"]["Aggregate"]["Event"]
+    kind_count_list = [
+        {"kind": event["groupedBy"]["value"], "count": event["meta"]["count"]}
+        for event in events
+    ]
+
+    df = pd.DataFrame(kind_count_list)
+    return df

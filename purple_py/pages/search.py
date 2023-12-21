@@ -50,7 +50,7 @@ def layout():
     [State("search-input", "value")],
 )
 def update_output(n_clicks, value):
-    output_cols = ["content", "created_at"]
+    output_cols = ["content", "pubkey", "created_at", "kind"]
     if n_clicks > 0 and value:
         df = search_weaviate(client, value)
         if df is not None and not df.empty:

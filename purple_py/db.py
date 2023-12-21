@@ -19,7 +19,6 @@ from purple_py.log import logger
 from purple_py.query import filter_users, get_user_uuid
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
-import os
 from sentence_transformers import SentenceTransformer
 import subprocess
 import weaviate
@@ -31,7 +30,7 @@ def load_events_into_weaviate(client):
     process_output["event_id_list"] = []
     process_output["content_list"] = []
 
-    process_output = read_strfy_db(
+    process_output = read_strfry_db(
         client,
         process_fn=get_content_for_embeddings,
         process_output=process_output,
@@ -52,7 +51,7 @@ def load_events_into_weaviate(client):
     add_npub_mean_vec(client)
 
 
-def read_strfy_db(client, process_fn, process_output):
+def read_strfry_db(client, process_fn, process_output):
     env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
     db_id = env.open_db(b"rasgueadb_defaultDb__Event__id")
     db_payload = env.open_db(b"rasgueadb_defaultDb__EventPayload")
@@ -350,6 +349,26 @@ def get_neo4j_driver():
 
 def close_neo4j_driver():
     neo4j_driver.close()
+
+
+def get_created_at_dates(client):
+    process_output = {}
+    process_output["created_at_list"] = []
+
+    process_output = read_strfry_db(
+        client,
+        process_fn=parse_created_at_dates,
+        process_output=process_output,
+    )
+    created_at_list = process_output["created_at_list"]
+    # start_date = np.percentile(created_at_list, 2.5)
+    # end_date = np.percentile(created_at_list, 97.5)
+    return created_at_list
+
+
+def parse_created_at_dates(event_json, process_output, batch):
+    process_output["created_at_list"].append(event_json["created_at"])
+    return process_output
 
 
 neo4j_driver = get_neo4j_driver()

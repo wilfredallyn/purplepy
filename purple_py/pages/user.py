@@ -6,7 +6,7 @@ from purple_py.db import (
     client,
     neo4j_driver,
 )
-from purple_py.plot import plot_histogram
+from purple_py.plot import plot_event_histogram
 from purple_py.query import query_weaviate, get_similar_users
 from purple_py.utils import get_pubkey_hex, get_npub, get_events_by_time, parse_datetime
 
@@ -135,7 +135,7 @@ def update_graph(
     if df.empty:
         return (px.scatter(template=None),)
 
-    fig = plot_histogram(
+    fig = plot_event_histogram(
         df, groupby_cols=groupby_cols, title=f"Histogram of events for {npub}"
     )
 

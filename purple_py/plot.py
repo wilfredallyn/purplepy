@@ -2,7 +2,7 @@ import numpy as np
 import plotly.express as px
 
 
-def plot_histogram(df, groupby_cols=None, title=""):
+def plot_event_histogram(df, groupby_cols=None, title=""):
     if groupby_cols is None:
         groupby_cols = []
     elif isinstance(groupby_cols, str):
