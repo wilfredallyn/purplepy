@@ -70,11 +70,12 @@ def read_strfry_db(client, process_fn, process_output):
 
 
 def get_content_for_embeddings(event_json, process_output, batch):
-    text_kinds = [1, 31922, 31923]
+    # filter kinds by adding kind numbers to text_kinds
+    # text_kinds = [1, 31922, 31923]
     if (
         "content" in event_json
         and len(event_json["content"]) >= MIN_CONTENT_LENGTH
-        and event_json["kind"] in text_kinds
+        # and event_json["kind"] in text_kinds
     ):
         process_output["event_id_list"].append(event_json["id"])
         process_output["content_list"].append(event_json["content"])
@@ -203,7 +204,7 @@ def add_npub_mean_vec(client):
     for pubkey in df_vec.index:
         user_uuid = get_user_uuid(client, pubkey)
 
-        # api does not support batch update
+        # api v3 does not support batch update
         if user_uuid:
             client.data_object.update(
                 uuid=user_uuid,
@@ -238,7 +239,8 @@ def create_weaviate_user_class(client):
             }
         },
     }
-    # client.schema.delete_class('User')
+    if client.schema.exists(class_name="User"):
+        client.schema.delete_class("User")
     client.schema.create_class(user_class)
 
 
@@ -315,7 +317,8 @@ def create_weaviate_event_class(client):
             }
         },
     }
-    # client.schema.delete_class('Event')
+    if client.schema.exists(class_name="Event"):
+        client.schema.delete_class("Event")
     client.schema.create_class(event_class)
 
 
@@ -343,7 +346,8 @@ def get_neo4j_driver():
             NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
         )
     except ServiceUnavailable as e:
-        print(f"Error connecting to neo4j: {e}")
+        logger.error(f"Error connecting to neo4j: {e}")
+        raise
     return neo4j_driver
 
 
