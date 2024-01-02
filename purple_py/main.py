@@ -30,4 +30,5 @@ load_events_into_weaviate(client)
 #  echo ':source neo4j-import/constraints.cypher' | cypher-shell -u neo4j -p neo4j
 # load_neo4j_data()
 
-# python app.py
+# cd [path/to/purple-py]
+# python -m purple_py.app

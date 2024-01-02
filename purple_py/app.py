@@ -2,16 +2,21 @@ import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dotenv import load_dotenv
+import sys
 
 
 load_dotenv()
 
-app = dash.Dash(
-    __name__,
-    use_pages=True,
-    external_stylesheets=[dbc.themes.SPACELAB],
-    suppress_callback_exceptions=True,
-)
+try:
+    app = dash.Dash(
+        __name__,
+        use_pages=True,
+        external_stylesheets=[dbc.themes.SPACELAB],
+        suppress_callback_exceptions=True,
+    )
+except ModuleNotFoundError:
+    print("Run the app using command 'python -m purple_py.app'")
+    sys.exit(1)
 
 
 page_order = ["Home", "Search", "Network", "User"]
