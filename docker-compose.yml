@@ -1,4 +1,4 @@
-# weaviate uses docker (not nix)
+# docker used for weaviate (everything else setup in flake.nix)
 # https://weaviate.io/developers/weaviate/installation/docker-compose
 version: '3.4'
 services:
