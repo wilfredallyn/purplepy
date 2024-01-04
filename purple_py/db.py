@@ -15,12 +15,13 @@ from purple_py.config import (
     WEAVIATE_CLIENT_URL,
     WEAVIATE_PAGE_LIMIT,
 )
-from purple_py.log import logger
 from purple_py.query import filter_users, get_user_uuid
+from purple_py.log import logger
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 from sentence_transformers import SentenceTransformer
 import subprocess
+import sys
 import weaviate
 
 
@@ -378,6 +379,10 @@ def parse_created_at_dates(event_json, process_output, batch):
 neo4j_driver = get_neo4j_driver()
 atexit.register(close_neo4j_driver)
 
-client = weaviate.Client(
-    url=WEAVIATE_CLIENT_URL,
-)
+try:
+    client = weaviate.Client(
+        url=WEAVIATE_CLIENT_URL,
+    )
+except weaviate.exceptions.WeaviateStartUpError:
+    print("You need to start the Weaviate docker container with command 'docker compose up -d'")
+    sys.exit(1)
