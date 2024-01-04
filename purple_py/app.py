@@ -19,7 +19,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 
-page_order = ["Home", "Search", "Network", "User"]
+page_order = ["Home", "Search", "Network", "User", "Neo4j"]
 # page_order = ["Home", "Query Relays", "Network", "User", "Neo4j"]
 ordered_pages = sorted(
     dash.page_registry.values(), key=lambda page: page_order.index(page["name"])
