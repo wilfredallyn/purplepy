@@ -6,29 +6,30 @@ from purple_py.db import (
     load_events_into_weaviate,
     load_neo4j_data,
 )
+from purple_py.config import STRFRY_PATH
 from purple_py.parse import parse_event_json
 
-
+print("Errors logged in 'logfile.log'")
+# These commented commands need to be run before executing the python code
 # download events in strfry
-# strfry router strfry-router.config
+# `strfry router strfry-router.config`
+
+# export events as json for neo4j
+# `strfry export dbdump.jsonl`
 
 # start weaviate docker container
-# docker compose up -d && docker compose logs -f weaviate
+# `docker compose up -d``
 
 # load events into weaviate
 create_weaviate_event_class(client)
 create_weaviate_user_class(client)
 load_events_into_weaviate(client)
 
-# export events as json
-# ./strfry export dbdump.jsonl
-
 # load data into neo4j
-# STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
-# parse_event_json(os.path.join(STRFRY_PATH, "dbdump.jsonl"))
+parse_event_json(os.path.join(STRFRY_PATH, "dbdump.jsonl"))
 
-#  echo ':source neo4j-import/constraints.cypher' | cypher-shell -u neo4j -p neo4j
-# load_neo4j_data()
+# loads follows, mentions, reactions, replys, users into neo4j
+load_neo4j_data()
 
 # cd [path/to/purple-py]
-# python -m purple_py.app
+print("Start app with 'python -m purple_py.app'")

@@ -3,6 +3,7 @@ import json
 from purple_py.log import logger
 import os
 import pandas as pd
+import sys
 
 
 load_dotenv()
@@ -11,9 +12,15 @@ load_dotenv()
 def parse_event_json(db_file):
     NEO4J_IMPORT_DIR = os.getenv("NEO4J_IMPORT_DIR")
     data = []
-    with open(db_file, "r") as file:
-        for line in file:
-            data.append(json.loads(line))
+    try:
+        with open(db_file, "r") as file:
+            for line in file:
+                data.append(json.loads(line))
+    except FileNotFoundError as e:
+        msg = f"The json export of the strfry db does not exist: '{e.filename}'. This json file gets imported into Neo4j."
+        print(msg)
+        logger.exception(msg)
+        sys.exit(1)
     df = pd.DataFrame(data)
     df = df[df["id"].notna() & (df["id"] != "")]
     df = df.set_index("id")
@@ -61,7 +68,7 @@ def safe_json_loads(s):
     try:
         return json.loads(s.replace(r"\n", " "))
     except json.JSONDecodeError:
-        logger.error(f"Error parsing JSON content: {s}")
+        logger.exception(f"Error parsing JSON content: {s}")
         return {}
 
 

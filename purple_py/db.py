@@ -53,7 +53,13 @@ def load_events_into_weaviate(client):
 
 
 def read_strfry_db(client, process_fn, process_output):
-    env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
+    try:
+        env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
+    except FileNotFoundError as e:
+        msg = f"The strfry db directory '{e.filename}' does not exist"
+        print(msg)
+        logger.exception(msg)
+        sys.exit(1)
     db_id = env.open_db(b"rasgueadb_defaultDb__Event__id")
     db_payload = env.open_db(b"rasgueadb_defaultDb__EventPayload")
 
@@ -84,7 +90,13 @@ def get_content_for_embeddings(event_json, process_output, batch):
 
 
 def query_db_for_record(client, process_fn, process_input):
-    env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
+    try:
+        env = lmdb.open(path=STRFRY_PATH, max_dbs=10)
+    except FileNotFoundError as e:
+        msg = f"The strfry db directory '{e.filename}' does not exist"
+        print(msg)
+        logger.exception(msg)
+        sys.exit(1)
     db_id = env.open_db(b"rasgueadb_defaultDb__Event__id")
     db_payload = env.open_db(b"rasgueadb_defaultDb__EventPayload")
 
@@ -338,7 +350,10 @@ def load_neo4j_data():
         )
 
         if result.returncode != 0:
-            logger.error("Error executing command:", result.stderr)
+            msg = "Error executing command:", result.stderr
+            logger.exception(msg)
+            print(msg)
+            sys.exit(1)
 
 
 def get_neo4j_driver():
@@ -347,7 +362,7 @@ def get_neo4j_driver():
             NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
         )
     except ServiceUnavailable as e:
-        logger.error(f"Error connecting to neo4j: {e}")
+        logger.exception(f"Error connecting to neo4j: {e}")
         raise
     return neo4j_driver
 
@@ -384,5 +399,7 @@ try:
         url=WEAVIATE_CLIENT_URL,
     )
 except weaviate.exceptions.WeaviateStartUpError:
-    print("You need to start the Weaviate docker container with command 'docker compose up -d'")
+    msg = "You need to start the Weaviate docker container with command 'docker compose up -d'"
+    print(msg)
+    logger.exception(msg)
     sys.exit(1)
