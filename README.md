@@ -18,21 +18,15 @@ Demo using nostr events between 2023-11-14 and 2023-11-21:[add url]
   - instructions download (strfry router strfry-router.config)
 - Export nostr events from strfry database as json (for neo4j import): `./strfry export dbdump.jsonl`
 
-- Start weaviate docker container: `docker compose up -d && docker compose logs -f weaviate`
-- Create .env file with environment variables (`cp .env.example .env`)
-- Run python script main.py
+- Start weaviate docker container: `docker compose up -d`
+- Create .env file with environment variables: `cp .env.example .env`
+  - Make sure `STRFRY_DB_FOLDER`, `NEO4J_IMPORT_DIR` set correctly
+- Run python script main.py: `python -m purple_py.main`
   - create weaviate classes
   - load events into weaviate
   - load data into neo4j
-- Run dash app: python app.py
-
-# STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
-
-# parse_event_json(os.path.join(STRFRY_PATH, "dbdump.jsonl"))
-
-# echo ':source neo4j-import/constraints.cypher' | cypher-shell -u neo4j -p neo4j
-
-# load_neo4j_data()
+- Start dash app: `python -m purple_py.app`
+- Go to browser to use app: `http://localhost:8050/`
 
 ### Usage
 
