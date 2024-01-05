@@ -1,3 +1,4 @@
+from dash import dash_table
 from datetime import datetime
 from nostr_sdk import EventId, PublicKey
 
@@ -108,3 +109,47 @@ def parse_datetime_str(ts):
             raise ValueError("Unexpected format for 'created_at' column")
     else:
         raise ValueError("Input must be a string or integer")
+
+
+def format_data_table(df):
+    if "pubkey" in df.columns:
+        df = format_pubkey_html_link(df)
+
+    cols_list = []
+    for col in df.columns:
+        if col == "pubkey":
+            cols_list.append(
+                {"name": col, "id": col, "type": "text", "presentation": "markdown"}
+            )
+        else:
+            cols_list.append({"name": col, "id": col})
+
+    data_table = dash_table.DataTable(
+        data=df.to_dict("records"),
+        columns=cols_list,
+        style_data_conditional=[
+            {
+                "if": {"column_id": "content"},
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "maxWidth": 200,
+                "minWidth": 50,
+            }
+        ],
+        tooltip_data=[
+            {
+                column: {"value": str(value), "type": "markdown"}
+                for column, value in row.items()
+            }
+            for row in df.to_dict("records")
+        ],
+        markdown_options={"html": True},
+    )
+    return data_table
+
+
+def format_pubkey_html_link(df):
+    df["pubkey"] = df["pubkey"].apply(
+        lambda x: f'<a href="http://njump.me/{x}">{x}</a>'
+    )
+    return df

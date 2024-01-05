@@ -35,23 +35,14 @@ Demo using nostr events between 2023-11-14 and 2023-11-21:[add url]
 - `python -m purple_py.main`: load events into weaviate, load events into neo4j
 - `python -m purple_py.app`: start [plotly dash](https://dash.plotly.com/) app
 - go to [`http://localhost:8050/`](http://localhost:8050/)
-
-- The home page shows a summary about the number of events for each kind [home page screenshot]
-
-- [Search](http://localhost:8050/search) tab ([src](pages/search.py)): find events related to search phrase using vector-based similarity
-
+  - The home page shows a summary about the number of events for each kind [home page screenshot]
+  - [Search](http://localhost:8050/search) tab ([src](pages/search.py)): find events related to search phrase using vector-based similarity
   <img src="images/search.png" alt="search"  width="300" style="display: block;" />
-
-- [Network](http://localhost:8050/network) tab ([src](pages/network.py)): show network-level metrics such as most active, followed, and targeted users
-
+  - [Network](http://localhost:8050/network) tab ([src](pages/network.py)): show network-level metrics such as most active, followed, and targeted users
   <img src="images/network.png" alt="network"  width="300" style="display: block;" />
-
-- [User](http://localhost:8050/user) tab ([src](pages/user.py)): show user-level metrics such as histogram of events created by user (broken down by kind, day of week, and hour of day) and biggest fan (user with the most mentions/reactions to those events)
-
+  - [User](http://localhost:8050/user) tab ([src](pages/user.py)): show user-level metrics such as histogram of events created by user (broken down by kind, day of week, and hour of day) and biggest fan (user with the most mentions/reactions to those events)
   <img src="images/user.png" alt="user"  width="300" style="display: block;" />
-
-- [Neo4j](http://localhost:8050/neo4j) tab ([src](pages/neo4j.py)): link to neo4j browser
-
+  - [Neo4j](http://localhost:8050/neo4j) tab ([src](pages/neo4j.py)): link to neo4j browser
   <img src="images/neo4j.png" alt="neo4j"  width="300" style="display: block;" />
 
 ### Tools

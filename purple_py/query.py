@@ -55,6 +55,7 @@ def search_weaviate(client, text, limit=None):
         logger.error(f"Error querying weaviate: {response['errors'][0]['message']}")
     else:
         df = pd.DataFrame(response["data"]["Get"]["Event"])
+        df["pubkey"] = df["pubkey"].apply(lambda x: PublicKey.from_hex(x).to_bech32())
         df["distance"] = df["_additional"].apply(
             lambda x: x["distance"] if isinstance(x, dict) else None
         )

@@ -1,12 +1,12 @@
 import dash
-from dash import callback, dcc, html, dash_table
+from dash import callback, dcc, html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from nostr_sdk import PublicKey
 import pandas as pd
 from purple_py.db import client
 from purple_py.query import search_weaviate
-
+from purple_py.utils import format_data_table
 
 dash.register_page(__name__, path_template="/search", name="Search")
 
@@ -55,26 +55,7 @@ def update_output(n_clicks, value):
         df = search_weaviate(client, value)
         if df is not None and not df.empty:
             df = df[output_cols]
-            return dash_table.DataTable(
-                data=df.to_dict("records"),
-                columns=[{"name": i, "id": i} for i in df.columns],
-                style_data_conditional=[
-                    {
-                        "if": {"column_id": "content"},
-                        "overflow": "hidden",
-                        "textOverflow": "ellipsis",
-                        "maxWidth": 200,
-                        "minWidth": 100,
-                    }
-                ],
-                tooltip_data=[
-                    {
-                        column: {"value": str(value), "type": "markdown"}
-                        for column, value in row.items()
-                    }
-                    for row in df.to_dict("records")
-                ],
-            )
+            return format_data_table(df)
         else:
             return "No results found"
     return "Enter a term and click search"
