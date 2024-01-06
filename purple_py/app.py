@@ -15,8 +15,8 @@ try:
         suppress_callback_exceptions=True,
     )
 except ModuleNotFoundError:
-    print("Run the app using command 'python -m purple_py.app'")
-    sys.exit(1)
+    print("Run with command: python -m purple_py.app")
+    sys.exit()
 
 
 page_order = ["Home", "Search", "Network", "User", "Neo4j"]

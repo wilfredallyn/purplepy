@@ -1,4 +1,12 @@
 import os
+import sys
+
+try:
+    from purple_py.config import STRFRY_PATH
+except ModuleNotFoundError:
+    print("Run with command: python -m purple_py.main")
+    sys.exit()
+
 from purple_py.db import (
     client,
     create_weaviate_event_class,
@@ -6,7 +14,6 @@ from purple_py.db import (
     load_events_into_weaviate,
     load_neo4j_data,
 )
-from purple_py.config import STRFRY_PATH
 from purple_py.parse import parse_event_json
 
 print("Errors logged in 'logfile.log'")

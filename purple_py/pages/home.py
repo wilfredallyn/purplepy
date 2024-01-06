@@ -15,9 +15,13 @@ def layout():
             dbc.Container(
                 [
                     dbc.Row(
-                        html.P(
-                            "This database contains mostly events between 2023-11-14 and 2023-11-21. It contains the following events:"
-                        )
+                        [
+                            html.P(
+                                "This database contains mostly events between 2023-11-14 and 2023-11-21"
+                            ),
+                            html.Br(),
+                            html.P("It contains the following events:"),
+                        ]
                     ),
                     dbc.Row(
                         dbc.Col(
