@@ -2,19 +2,19 @@ import os
 import sys
 
 try:
-    from purple_py.config import STRFRY_PATH
+    from purplepy.config import STRFRY_PATH
 except ModuleNotFoundError:
-    print("Run with command: python -m purple_py.main")
+    print("Run with command: python -m purplepy.main")
     sys.exit()
 
-from purple_py.db import (
+from purplepy.db import (
     client,
     create_weaviate_event_class,
     create_weaviate_user_class,
     load_events_into_weaviate,
     load_neo4j_data,
 )
-from purple_py.parse import parse_event_json
+from purplepy.parse import parse_event_json
 
 print("Errors logged in 'logfile.log'")
 # These commented commands need to be run before executing the python code
@@ -39,4 +39,4 @@ parse_event_json(os.path.join(STRFRY_PATH, "dbdump.jsonl"))
 load_neo4j_data()
 
 # cd [path/to/purple-py]
-print("Start app with 'python -m purple_py.app'")
+print("Start app with 'python -m purplepy.app'")

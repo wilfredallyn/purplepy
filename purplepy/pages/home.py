@@ -1,9 +1,9 @@
 import dash
 from dash import html, dash_table
 import dash_bootstrap_components as dbc
-from purple_py.db import client
-from purple_py.query import get_kind_counts
-from purple_py.utils import kind_name_dict
+from purplepy.db import client
+from purplepy.query import get_kind_counts
+from purplepy.utils import kind_name_dict
 
 
 dash.register_page(__name__, path="/", name="Home")  # '/' is home page

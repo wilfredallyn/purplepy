@@ -26,13 +26,15 @@ Demo using nostr events between 2023-11-14 and 2023-11-21:[add url]
 - Create .env file with environment variables:
   - `cp .env.example .env`
   - Set `STRFRY_DB_FOLDER`, `NEO4J_IMPORT_DIR` to correct directories
+- Start Neo4j
+  - `neo4j start`
 - Run python script main.py:
-  - `python -m purple_py.main`
+  - `python -m purplepy.main`
   - create weaviate classes
   - load events into weaviate
   - load data into neo4j
 - Start plotly dash app:
-  - `python -m purple_py.app`
+  - `python -m purplepy.app`
 - Go to browser to use app:
   - [`http://localhost:8050/`](http://localhost:8050/): home page summarizes the number of events in db
   

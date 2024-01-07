@@ -2,7 +2,7 @@ import dash
 from dash import html
 from nostr_sdk import PublicKey
 import pandas as pd
-from purple_py.db import neo4j_driver
+from purplepy.db import neo4j_driver
 
 
 dash.register_page(__name__, path_template="/network", name="Network")

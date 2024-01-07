@@ -2,13 +2,13 @@ import dash
 from dash import callback, dcc, html, dash_table
 from dash.dependencies import Input, Output, State
 import plotly.express as px
-from purple_py.db import (
+from purplepy.db import (
     client,
     neo4j_driver,
 )
-from purple_py.plot import plot_event_histogram
-from purple_py.query import query_weaviate, get_similar_users
-from purple_py.utils import get_pubkey_hex, get_npub, get_events_by_time, parse_datetime
+from purplepy.plot import plot_event_histogram
+from purplepy.query import query_weaviate, get_similar_users
+from purplepy.utils import get_pubkey_hex, get_npub, get_events_by_time, parse_datetime
 
 
 dash.register_page(__name__, path="/user", name="User")

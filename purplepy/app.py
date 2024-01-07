@@ -15,7 +15,7 @@ try:
         suppress_callback_exceptions=True,
     )
 except ModuleNotFoundError:
-    print("Run with command: python -m purple_py.app")
+    print("Run with command: python -m purplepy.app")
     sys.exit()
 
 
