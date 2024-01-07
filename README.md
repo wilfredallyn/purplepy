@@ -4,7 +4,8 @@
 
 This project is a prototype app for analyzing nostr data to help with search, discovery, and onboarding.
 
-Demo using nostr events between 2023-11-14 and 2023-11-21:[add url]
+### Live Demo
+[add url] (Note: db contains mostly events from 2023-11-14 to 2023-11-21)
 
 ### Features
 - Vectorizes content with [embeddings](https://www.elastic.co/what-is/vector-embedding) to enable semantic search across different kinds
@@ -58,3 +59,5 @@ Demo using nostr events between 2023-11-14 and 2023-11-21:[add url]
 - [Neo4j](https://neo4j.com/): graph database for network analysis
 - [Plotly Dash](https://dash.plotly.com/): python framework for interactive visualizations
 - [Rust Nostr SDK](https://github.com/rust-nostr/nostr/tree/master/crates/nostr-sdk) [python bindings](https://pypi.org/project/nostr-sdk/): nostr client library
+
+### Future Plans
