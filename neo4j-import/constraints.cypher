@@ -1,0 +1,9 @@
+CREATE CONSTRAINT unique_user_pubkey
+IF NOT EXISTS
+ON (n:User)
+ASSERT n.pubkey IS UNIQUE;
+
+CREATE CONSTRAINT unique_event_id
+IF NOT EXISTS
+ON (e:Event)
+ASSERT e.id IS UNIQUE;

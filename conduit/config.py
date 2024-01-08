@@ -1,0 +1,18 @@
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+
+STRFRY_PATH = os.getenv("STRFRY_DB_FOLDER")
+
+WEAVIATE_BATCH_SIZE = int(os.getenv("WEAVIATE_CLIENT_BATCH_SIZE"))
+WEAVIATE_CLIENT_URL = os.getenv("WEAVIATE_CLIENT_URL")
+WEAVIATE_PAGE_LIMIT = int(os.getenv("WEAVIATE_PAGE_LIMIT"))
+MIN_CONTENT_LENGTH = int(os.getenv("MIN_CONTENT_LENGTH"))
+
+NEO4J_IMPORT_DIR = os.getenv("NEO4J_IMPORT_DIR")
+NEO4J_URI = os.getenv("NEO4J_URI")
+NEO4J_USERNAME = os.getenv("NEO4J_USERNAME")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
