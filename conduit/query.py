@@ -1,8 +1,8 @@
 from nostr_sdk import PublicKey
 import pandas as pd
-from purplepy.config import WEAVIATE_PAGE_LIMIT
-from purplepy.log import logger
-from purplepy.utils import get_npub
+from conduit.config import WEAVIATE_PAGE_LIMIT
+from conduit.log import logger
+from conduit.utils import get_npub
 
 
 def query_weaviate(client, npub=None, kind=None):

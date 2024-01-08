@@ -1,5 +1,5 @@
 {
-  description = "purple-py";
+  description = "purplepy";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixpkgs-unstable";

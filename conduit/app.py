@@ -15,7 +15,7 @@ try:
         suppress_callback_exceptions=True,
     )
 except ModuleNotFoundError:
-    print("Run with command: python -m purplepy.app")
+    print("Run with command: python -m conduit.app")
     sys.exit()
 
 
@@ -43,7 +43,7 @@ app.layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div("purple-py", style={"fontSize": 50, "textAlign": "center"})
+                    html.Div("conduit", style={"fontSize": 50, "textAlign": "center"})
                 )
             ]
         ),

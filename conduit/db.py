@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import json
 import lmdb
 import numpy as np
-from purplepy.config import (
+from conduit.config import (
     MIN_CONTENT_LENGTH,
     NEO4J_IMPORT_DIR,
     NEO4J_PASSWORD,
@@ -15,8 +15,8 @@ from purplepy.config import (
     WEAVIATE_CLIENT_URL,
     WEAVIATE_PAGE_LIMIT,
 )
-from purplepy.query import filter_users, get_user_uuid
-from purplepy.log import logger
+from conduit.query import filter_users, get_user_uuid
+from conduit.log import logger
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 from sentence_transformers import SentenceTransformer

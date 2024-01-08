@@ -4,9 +4,9 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from nostr_sdk import PublicKey
 import pandas as pd
-from purplepy.db import client
-from purplepy.query import search_weaviate
-from purplepy.utils import format_data_table
+from conduit.db import client
+from conduit.query import search_weaviate
+from conduit.utils import format_data_table
 
 dash.register_page(__name__, path_template="/search", name="Search")
 

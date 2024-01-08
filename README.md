@@ -1,4 +1,4 @@
-# purple-py
+# Conduit
 
 ### Objectives
 
@@ -30,12 +30,12 @@ This project is a prototype app for analyzing nostr data to help with search, di
 - Start Neo4j
   - `neo4j start`
 - Run python script main.py:
-  - `python -m purplepy.main`
+  - `python -m conduit.main`
   - create weaviate classes
   - load events into weaviate
   - load data into neo4j
 - Start plotly dash app:
-  - `python -m purplepy.app`
+  - `python -m conduit.app`
 - Go to browser to use app:
   - [`http://localhost:8050/`](http://localhost:8050/): home page summarizes the number of events in db
   
@@ -61,3 +61,4 @@ This project is a prototype app for analyzing nostr data to help with search, di
 - [Rust Nostr SDK](https://github.com/rust-nostr/nostr/tree/master/crates/nostr-sdk) [python bindings](https://pypi.org/project/nostr-sdk/): nostr client library
 
 ### Future Plans
+- TBD
