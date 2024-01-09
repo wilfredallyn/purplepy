@@ -1,5 +1,5 @@
 {
-  description = "purplepy";
+  description = "conduit";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixpkgs-unstable";
@@ -86,7 +86,6 @@
         pytest
         python-dotenv
         sentence-transformers
-        sqlalchemy
         torch
         torchvision
         weaviate-client  # v3 client

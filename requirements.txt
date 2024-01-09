@@ -1,0 +1,16 @@
+black
+dash
+dash-bootstrap-components
+dotenv
+jupyter
+lmdb
+neo4j
+nostr-sdk
+numpy
+pandas
+plotly
+pytest
+sentence-transformers
+torch
+torchvision
+weaviate-client
