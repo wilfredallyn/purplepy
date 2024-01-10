@@ -253,7 +253,11 @@ def create_weaviate_user_class(client):
         },
     }
     if client.schema.exists(class_name="User"):
-        client.schema.delete_class("User")
+        logger.error(
+            f"You need to delete the existing Event class. See comments in main.py"
+        )
+        sys.exit()
+        # client.schema.delete_class("User")
     client.schema.create_class(user_class)
 
 
@@ -331,7 +335,11 @@ def create_weaviate_event_class(client):
         },
     }
     if client.schema.exists(class_name="Event"):
-        client.schema.delete_class("Event")
+        logger.error(
+            f"You need to delete the existing Event class. See comments in main.py"
+        )
+        sys.exit()
+        # client.schema.delete_class("Event")
     client.schema.create_class(event_class)
 
 

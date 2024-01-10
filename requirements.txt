@@ -1,16 +1,3 @@
-black
-dash
-dash-bootstrap-components
-dotenv
-jupyter
-lmdb
-neo4j
-nostr-sdk
-numpy
-pandas
-plotly
-pytest
-sentence-transformers
-torch
-torchvision
-weaviate-client
+# python packages managed in flake.nix
+# empty requirements.txt for digitalocean to recognize python app
+# https://docs.digitalocean.com/products/app-platform/reference/buildpacks/python/

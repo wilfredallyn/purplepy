@@ -17,6 +17,16 @@ def layout():
                     dbc.Row(
                         [
                             html.P(
+                                [
+                                    "This is a prototype app for analyzing nostr data to help with search, discovery, and onboarding. ",
+                                    html.A(
+                                        "Github Code",
+                                        href="https://github.com/wilfredallyn/conduit",
+                                    ),
+                                ]
+                            ),
+                            html.Br(),
+                            html.P(
                                 "This database contains mostly events between 2023-11-14 and 2023-11-21"
                             ),
                             html.Br(),

@@ -28,6 +28,11 @@ print("Errors logged in 'logfile.log'")
 # `docker compose up -d``
 
 # load events into weaviate
+# uncomment these lines to delete existing classes
+# if client.schema.exists(class_name="User"):
+#     client.schema.delete_class("User")
+# if client.schema.exists(class_name="Event"):
+#     client.schema.delete_class("Event")
 create_weaviate_event_class(client)
 create_weaviate_user_class(client)
 load_events_into_weaviate(client)
