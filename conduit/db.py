@@ -407,7 +407,7 @@ try:
         url=WEAVIATE_CLIENT_URL,
     )
 except weaviate.exceptions.WeaviateStartUpError:
-    msg = "You need to start the Weaviate docker container with command 'docker compose up -d'"
+    msg = f"{WEAVIATE_CLIENT_URL}: You need to start the Weaviate docker container with command 'docker compose up -d'"
     print(msg)
     logger.exception(msg)
     sys.exit(1)

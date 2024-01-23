@@ -2,6 +2,20 @@
 # https://weaviate.io/developers/weaviate/installation/docker-compose
 version: '3.4'
 services:
+  conduit:
+    # conduit service for deploy, can comment out for local development
+    build: .
+    command: tail -f /dev/null
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+      - "8100:8000"
+      - "8050:8050"
+    depends_on:
+      - weaviate
+      - t2v-transformers
+      - qna-transformers
+
   weaviate:
     command:
       - --host

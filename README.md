@@ -15,7 +15,9 @@ This project is a prototype app for analyzing nostr data to help with search, di
   - Query data using plotly [dash](https://dash.plotly.com/) app with interactive python visualizations
 
 ### Usage
-- Install [Nix package manager](https://nixos.org/download) to setup databases (weaviate and neo4j)
+- Install [Nix package manager](https://nixos.org/download) to setup databases (weaviate and neo4j). Another option is [
+nix-installer](https://github.com/DeterminateSystems/nix-installer).
+  - [Nix intro](https://zero-to-nix.com/)
 - Start nix:
   - `nix develop`
 - Download nostr events using [strfry](https://github.com/hoytech/strfry/blob/master/README.md#compile)
